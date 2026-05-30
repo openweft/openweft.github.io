@@ -49,11 +49,15 @@ jobs:
         env:
           HUGO_ENVIRONMENT: production
           HUGO_ENV: production
+        # baseURL comes from hugo.toml — it's the single source of
+        # truth. We deliberately don't pass --baseURL from
+        # configure-pages.outputs.base_url because that field can lag
+        # the actual repo URL (e.g. just after a repo rename), which
+        # bakes a wrong /<old-name>/ prefix into every asset link.
         run: |
           hugo \
             --gc \
-            --minify \
-            --baseURL "${{ steps.pages.outputs.base_url }}/"
+            --minify
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

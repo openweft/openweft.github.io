@@ -58,13 +58,20 @@ jobs:
         # We pin mike even though we don't run it yet — once the first
         # release lands we swap `mkdocs build` for `mike deploy <ver> latest`
         # and the version is already a known quantity.
+        #
+        # pymdown-extensions is intentionally NOT pinned : mkdocs-material
+        # already declares `pymdown-extensions >=10.2,<11.0` ; pip's
+        # resolver picks the latest compatible release. Pinning it to a
+        # mismatched version silently breaks the pymdownx.superfences
+        # extension (fenced code blocks render as literal triple
+        # backticks inside <p><code>), with no warning from `mkdocs
+        # build --strict`. Easier to trust the upstream version range.
         run: |
           pip install --upgrade pip
           pip install \
             mkdocs==1.6.1 \
             mkdocs-material==9.5.49 \
-            mike==2.1.3 \
-            pymdown-extensions==10.12
+            mike==2.1.3
 
       - name: Build Hugo landing
         env:

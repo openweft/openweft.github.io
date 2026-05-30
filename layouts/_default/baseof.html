@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ .Site.Title }} — a modern Go-native cloud platform</title>
+  <meta name="description" content="{{ .Site.Params.description }}">
+  <meta name="generator" content="Hugo">
+  {{/* Apply the saved theme before first paint to avoid a flash.
+       Light is the default ; dark is opt-in and persisted. */}}
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('weft-theme') === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
+</head>
+<body>
+  {{ partial "nav.html" . }}
+
+  <main>
+    {{ block "main" . }}{{ end }}
+  </main>
+
+  {{ partial "footer.html" . }}
+
+  <script>
+    (function () {
+      var btn = document.querySelector('.theme-toggle');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var root = document.documentElement;
+        var dark = root.getAttribute('data-theme') === 'dark';
+        try {
+          if (dark) {
+            root.removeAttribute('data-theme');
+            localStorage.setItem('weft-theme', 'light');
+          } else {
+            root.setAttribute('data-theme', 'dark');
+            localStorage.setItem('weft-theme', 'dark');
+          }
+        } catch (e) {}
+      });
+    })();
+  </script>
+</body>
+</html>

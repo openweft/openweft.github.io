@@ -1,0 +1,652 @@
+# Mesh visualisation data — read by layouts/partials/mesh.html.
+#
+# Materialises the AZ → Rack → Host → microVM hierarchy :
+#
+#   - Three DC containers (DC1 / DC2 / DC3), dashed outline.
+#   - Each DC holds two Rack containers (solid outline).
+#   - Each Rack holds two physical hosts (small node circles).
+#   - Each host runs two microVMs.
+#
+# The Weft daemon itself runs as just another HA microVM
+# (`weft-1/2/3`, one per DC) — there is no separate "control
+# plane box" floating above the racks. All platform services
+# (etcd, nats, dex, zot, coredns, weft) are co-located on the
+# same physical hosts as tenant workloads, isolated only by
+# microVM boundaries.
+#
+# Spheres encode :
+#   - Cross-DC infra traffic along the top microVM row
+#   - Intra-DC weft-daemon dispatch to other microVMs
+#   - Cross-DC tenant traffic along the bottom row
+#   - The long diagonal showing the mesh is any-to-any
+#
+# Plane labels (CP / DP) are conceptual — colour distinguishes
+# the two populations more strictly than y-position does
+# (indigo = infra/CP, sky-blue = tenant/DP).
+
+# =========================================================
+# Plane swimlane labels — rendered in the left margin of the
+# SVG. Text is rotated -90° (read bottom-to-top) by the partial.
+# Placed at vertical extremes to avoid overlap with each other.
+# =========================================================
+
+[[planes]]
+x = -50
+y = 200
+label = "Control plane"
+
+[[planes]]
+x = -50
+y = 480
+label = "Data plane"
+
+# =========================================================
+# Containers — DC outer rectangles + per-rack inner rectangles.
+# Drawn first so the nodes + edges layer on top.
+# =========================================================
+
+# --- DC1 ---
+[[containers]]
+x = 20
+y = 30
+w = 360
+h = 480
+kind = "dc"
+label = "DC1"
+lx = 38
+ly = 56
+
+# Racks inside DC1 — two side-by-side.
+[[containers]]
+x = 40
+y = 200
+w = 150
+h = 280
+kind = "rack"
+label = "Rack 1A"
+lx = 55
+ly = 222
+[[containers]]
+x = 210
+y = 200
+w = 150
+h = 280
+kind = "rack"
+label = "Rack 1B"
+lx = 225
+ly = 222
+
+# --- DC2 ---
+[[containers]]
+x = 420
+y = 30
+w = 360
+h = 480
+kind = "dc"
+label = "DC2"
+lx = 438
+ly = 56
+
+[[containers]]
+x = 440
+y = 200
+w = 150
+h = 280
+kind = "rack"
+label = "Rack 2A"
+lx = 455
+ly = 222
+[[containers]]
+x = 610
+y = 200
+w = 150
+h = 280
+kind = "rack"
+label = "Rack 2B"
+lx = 625
+ly = 222
+
+# --- DC3 ---
+[[containers]]
+x = 820
+y = 30
+w = 360
+h = 480
+kind = "dc"
+label = "DC3"
+lx = 838
+ly = 56
+
+[[containers]]
+x = 840
+y = 200
+w = 150
+h = 280
+kind = "rack"
+label = "Rack 3A"
+lx = 855
+ly = 222
+[[containers]]
+x = 1010
+y = 200
+w = 150
+h = 280
+kind = "rack"
+label = "Rack 3B"
+lx = 1025
+ly = 222
+
+# =========================================================
+# Host nodes — 12 total (2 racks × 2 hosts × 3 DCs).
+# Each host runs two microVMs (declared below).
+# =========================================================
+
+# DC1 hosts — Rack 1A (cx=115) + Rack 1B (cx=285), 2 per rack.
+[[nodes]]
+x = 115
+y = 290
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 115
+y = 410
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 285
+y = 290
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 285
+y = 410
+kind = "agent"
+halo_r = 11
+core_r = 6
+
+# DC2 hosts — Rack 2A (cx=515) + Rack 2B (cx=685).
+[[nodes]]
+x = 515
+y = 290
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 515
+y = 410
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 685
+y = 290
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 685
+y = 410
+kind = "agent"
+halo_r = 11
+core_r = 6
+
+# DC3 hosts — Rack 3A (cx=915) + Rack 3B (cx=1085).
+[[nodes]]
+x = 915
+y = 290
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 915
+y = 410
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 1085
+y = 290
+kind = "agent"
+halo_r = 11
+core_r = 6
+[[nodes]]
+x = 1085
+y = 410
+kind = "agent"
+halo_r = 11
+core_r = 6
+
+# =========================================================
+# MicroVMs — 2 per host. Spread ±25 from the host's x so the
+# infra service labels (etcd-1, nats-1, coredns-1, weft-1, …)
+# don't overlap each other horizontally.
+#
+# Per-DC infra layout (6 platform services per DC, fully HA
+# via cross-DC replication) :
+#
+#   Rack A  : etcd + nats + dex + zot                (4 infra)
+#   Rack B  : coredns + weft + 2 tenants  (2 infra + 2 tenant)
+#
+# 24 microVMs total = 18 infra (6 services × 3 DCs) + 6 tenant.
+# `weft-N` is the cloud-platform control-plane daemon itself,
+# running in HA across DCs just like every other service.
+# =========================================================
+
+# --- DC1 — Rack 1A : etcd-1 + nats-1 (top host) ; dex-1 + zot-1 (bottom host). ---
+[[nodes]]
+x = 90
+y = 320
+kind = "infra"
+label = "etcd-1"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 140
+y = 320
+kind = "infra"
+label = "nats-1"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 90
+y = 438
+kind = "infra"
+label = "dex-1"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 140
+y = 438
+kind = "infra"
+label = "zot-1"
+label_y = 19
+halo_r = 6
+core_r = 3
+
+# --- DC1 — Rack 1B : coredns-1 + weft-1 (top host) ; 2 tenants (bottom host). ---
+[[nodes]]
+x = 260
+y = 320
+kind = "infra"
+label = "coredns-1"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 310
+y = 320
+kind = "infra"
+label = "weft-1"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 260
+y = 438
+kind = "microvm"
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 310
+y = 438
+kind = "microvm"
+halo_r = 6
+core_r = 3
+
+# --- DC2 — Rack 2A : etcd-2 + nats-2 ; dex-2 + zot-2. ---
+[[nodes]]
+x = 490
+y = 320
+kind = "infra"
+label = "etcd-2"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 540
+y = 320
+kind = "infra"
+label = "nats-2"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 490
+y = 438
+kind = "infra"
+label = "dex-2"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 540
+y = 438
+kind = "infra"
+label = "zot-2"
+label_y = 19
+halo_r = 6
+core_r = 3
+
+# --- DC2 — Rack 2B : coredns-2 + weft-2 ; 2 tenants. ---
+[[nodes]]
+x = 660
+y = 320
+kind = "infra"
+label = "coredns-2"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 710
+y = 320
+kind = "infra"
+label = "weft-2"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 660
+y = 438
+kind = "microvm"
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 710
+y = 438
+kind = "microvm"
+halo_r = 6
+core_r = 3
+
+# --- DC3 — Rack 3A : etcd-3 + nats-3 ; dex-3 + zot-3. ---
+[[nodes]]
+x = 890
+y = 320
+kind = "infra"
+label = "etcd-3"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 940
+y = 320
+kind = "infra"
+label = "nats-3"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 890
+y = 438
+kind = "infra"
+label = "dex-3"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 940
+y = 438
+kind = "infra"
+label = "zot-3"
+label_y = 19
+halo_r = 6
+core_r = 3
+
+# --- DC3 — Rack 3B : coredns-3 + weft-3 ; 2 tenants. ---
+[[nodes]]
+x = 1060
+y = 320
+kind = "infra"
+label = "coredns-3"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 1110
+y = 320
+kind = "infra"
+label = "weft-3"
+label_y = 19
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 1060
+y = 438
+kind = "microvm"
+halo_r = 6
+core_r = 3
+[[nodes]]
+x = 1110
+y = 438
+kind = "microvm"
+halo_r = 6
+core_r = 3
+
+# =========================================================
+# Edges — intra-rack host links + inter-rack links + cross-DC
+# host traffic. No floating "CP triangle" : the etcd quorum is
+# implicit from the three etcd-N microVMs, and the weft HA
+# cluster is highlighted as a separate dashed chain below.
+# =========================================================
+
+# DC1 — host chains.
+# Intra-rack host pair (top ↔ bottom).
+[[edges]]
+x1 = 115
+y1 = 290
+x2 = 115
+y2 = 410
+[[edges]]
+x1 = 285
+y1 = 290
+x2 = 285
+y2 = 410
+# Inter-rack within DC1 — top + bottom.
+[[edges]]
+x1 = 115
+y1 = 290
+x2 = 285
+y2 = 290
+[[edges]]
+x1 = 115
+y1 = 410
+x2 = 285
+y2 = 410
+
+# DC2 — host chains.
+[[edges]]
+x1 = 515
+y1 = 290
+x2 = 515
+y2 = 410
+[[edges]]
+x1 = 685
+y1 = 290
+x2 = 685
+y2 = 410
+[[edges]]
+x1 = 515
+y1 = 290
+x2 = 685
+y2 = 290
+[[edges]]
+x1 = 515
+y1 = 410
+x2 = 685
+y2 = 410
+
+# DC3 — host chains.
+[[edges]]
+x1 = 915
+y1 = 290
+x2 = 915
+y2 = 410
+[[edges]]
+x1 = 1085
+y1 = 290
+x2 = 1085
+y2 = 410
+[[edges]]
+x1 = 915
+y1 = 290
+x2 = 1085
+y2 = 290
+[[edges]]
+x1 = 915
+y1 = 410
+x2 = 1085
+y2 = 410
+
+# Cross-DC links — the actual "weft thread". Bottom-row hosts
+# in adjacent DCs talk to each other (NATS JetStream
+# replication, control-plane gossip, …).
+[[edges]]
+x1 = 285
+y1 = 410
+x2 = 515
+y2 = 410
+[[edges]]
+x1 = 685
+y1 = 410
+x2 = 915
+y2 = 410
+
+# =========================================================
+# Mesh-network edges — WireGuard overlay connecting microVMs
+# across DCs. `kind = "mesh"` swaps the solid line for a
+# dashed sky-blue stroke so the eye reads them as "logical
+# overlay" rather than "physical link".
+# =========================================================
+
+# Top-row microvm chain DC1 → DC2 → DC3 (infra-to-infra).
+[[edges]]
+x1 = 140
+y1 = 320
+x2 = 490
+y2 = 320
+kind = "mesh"
+[[edges]]
+x1 = 540
+y1 = 320
+x2 = 890
+y2 = 320
+kind = "mesh"
+
+# Weft control-plane HA chain — explicit cross-DC links
+# between the three weft daemons (highlighted as the CP
+# quorum line, conceptually replacing the old floating
+# triangle).
+[[edges]]
+x1 = 310
+y1 = 320
+x2 = 710
+y2 = 320
+kind = "mesh"
+highlight = true
+[[edges]]
+x1 = 710
+y1 = 320
+x2 = 1110
+y2 = 320
+kind = "mesh"
+highlight = true
+
+# Bottom-row microvm chain DC1 → DC2 → DC3 (tenant-to-tenant
+# via the mesh).
+[[edges]]
+x1 = 310
+y1 = 438
+x2 = 660
+y2 = 438
+kind = "mesh"
+[[edges]]
+x1 = 710
+y1 = 438
+x2 = 1060
+y2 = 438
+kind = "mesh"
+
+# Long diagonal — DC1 top-right microvm reaches DC3 bottom-left.
+# Shows the mesh is any-to-any, not just nearest-neighbour.
+[[edges]]
+x1 = 140
+y1 = 320
+x2 = 1060
+y2 = 438
+kind = "mesh"
+
+# =========================================================
+# Paths (moving spheres)
+# =========================================================
+
+# Weft daemon HA replication — spheres travel along the weft
+# chain (weft-1 ↔ weft-2 ↔ weft-3). Replaces the old
+# inter-CP triangle animation.
+[[paths]]
+d = "M 310 320 L 710 320 L 1110 320"
+dur = "6s"
+r = 5
+fill = "var(--accent-3)"
+[[paths]]
+d = "M 1110 320 L 710 320 L 310 320"
+dur = "7s"
+begin = "1.4s"
+r = 4
+fill = "var(--accent-3)"
+
+# Intra-DC weft dispatch — from weft-N to a microvm in the
+# same DC. Conveys "the CP daemon schedules workloads onto
+# local hosts". One path per DC.
+[[paths]]
+d = "M 310 320 L 260 438"
+dur = "5s"
+begin = "0.3s"
+r = 4
+fill = "var(--accent-2)"
+[[paths]]
+d = "M 710 320 L 660 438"
+dur = "5.5s"
+begin = "1s"
+r = 4
+fill = "var(--accent-2)"
+[[paths]]
+d = "M 1110 320 L 1060 438"
+dur = "6s"
+begin = "2s"
+r = 4
+fill = "var(--accent-2)"
+
+# Cross-DC host traffic — the bottom row weaving across.
+[[paths]]
+d = "M 115 410 L 285 410 L 515 410 L 685 410 L 915 410 L 1085 410"
+dur = "9s"
+begin = "2.6s"
+r = 4
+fill = "var(--accent)"
+
+# Mesh-network traffic — microVM ↔ microVM packets crossing
+# the WireGuard fabric. Sky-blue (microvm colour) so the eye
+# associates the sphere with its node kind.
+[[paths]]
+d = "M 140 320 L 490 320 L 540 320 L 890 320"
+dur = "6.5s"
+begin = "0.4s"
+r = 4
+fill = "var(--mesh-microvm-fill)"
+[[paths]]
+d = "M 140 320 L 1060 438"
+dur = "5.5s"
+begin = "1.8s"
+r = 4
+fill = "var(--mesh-microvm-fill)"
+[[paths]]
+d = "M 310 438 L 660 438 L 710 438 L 1060 438"
+dur = "7s"
+begin = "3.4s"
+r = 4
+fill = "var(--mesh-microvm-fill)"

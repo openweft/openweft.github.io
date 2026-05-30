@@ -1,0 +1,4 @@
+# Hugo build outputs — `hugo` regenerates these.
+/public/
+/resources/_gen/
+.hugo_build.lock

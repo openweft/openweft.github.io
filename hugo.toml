@@ -1,0 +1,129 @@
+baseURL = 'https://openweft.github.io/'
+locale  = 'en-us'
+title   = 'Weft'
+# No theme — layouts live in ./layouts
+
+# Disable the Hugo defaults we don't want for a landing site.
+disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
+
+[params]
+  description = "Weft is an open, Go-native, multi-hypervisor, multi-tenant, multi-AZ cloud platform. One binary, server or client, like the HashiCorp tools."
+  brand       = "Weft"
+  github      = "openweft"
+  heroEyebrow = "Open · Go-native · Multi-tenant"
+  heroAccent  = "Weft"
+  heroTagline = "Without the weft, the warp is just parallel threads."
+  statusBadge = "Early development"
+
+  # Hero intro paragraphs. Two-line array → two <p> blocks in
+  # the layout. Markdown not needed — these are inline HTML
+  # strings the template emits verbatim (via the `safeHTML`
+  # template func).
+  heroIntro = [
+    "Weft is an <strong>open, Go-native cloud platform</strong> — multi-hypervisor, multi-tenant, multi-AZ. The name comes from weaving : the <em>weft</em> is the thread that crosses perpendicularly through the warp to form fabric, exactly what middleware does between heterogeneous hosts, networks, and storage backends.",
+    "One binary, server or client mode, like the HashiCorp tools. Runs on a laptop. Scales to a 3-DC cluster."
+  ]
+
+  # Caption rendered under the mesh SVG. Raw HTML — `safeHTML` in
+  # the partial — so we can <strong> the key terms.
+  meshCaption = "Three <strong>DCs</strong> (dashed) group <strong>racks</strong> of physical hosts ; each host runs <strong>microVMs</strong>. Indigo dots are <strong>infrastructure microVMs</strong> — <em>etcd</em>, <em>nats</em>, <em>dex</em>, <em>zot</em>, <em>coredns</em>, <em>cubefs</em>, plus the <em>weft</em> daemon itself — one replica per DC, all running side-by-side with tenant workloads (sky-blue dots) on the very hosts they orchestrate. There is no separate control-plane box : the <strong>weft</strong> chain across the top (highlighted) is the cloud platform's HA quorum, just another microVM service. Dashed sky threads are the <strong>WireGuard mesh</strong> connecting microVMs across DCs. Colour, not position, marks the <em>control plane</em> / <em>data plane</em> split."
+
+# Hero call-to-action buttons. First is rendered as the primary
+# (filled) style, second is the ghost (outlined) style.
+[[params.heroCTAs]]
+  label = "View on GitHub"
+  url   = "https://github.com/openweft"
+  style = "primary"
+[[params.heroCTAs]]
+  label = "Quick start"
+  url   = "#what"
+  style = "ghost"
+
+# Footer columns — categorised links rendered by
+# layouts/partials/footer.html. Each column has a title + list
+# of {name, url} link entries. Add or rebalance freely.
+[[params.footerColumns]]
+  title = "Project"
+  [[params.footerColumns.links]]
+    name = "Topology"
+    url  = "#topology"
+  [[params.footerColumns.links]]
+    name = "What it does"
+    url  = "#what"
+  [[params.footerColumns.links]]
+    name = "API access"
+    url  = "#api"
+  [[params.footerColumns.links]]
+    name = "Flavors, volumes & shares"
+    url  = "#flavors"
+  [[params.footerColumns.links]]
+    name = "Design"
+    url  = "#design"
+  [[params.footerColumns.links]]
+    name = "Components"
+    url  = "#components"
+  [[params.footerColumns.links]]
+    name = "Status"
+    url  = "#status"
+
+[[params.footerColumns]]
+  title = "Repositories"
+  [[params.footerColumns.links]]
+    name = "weft"
+    url  = "https://github.com/openweft/weft"
+  [[params.footerColumns.links]]
+    name = "weft-proto"
+    url  = "https://github.com/openweft/weft-proto"
+  [[params.footerColumns.links]]
+    name = "weft-drivers"
+    url  = "https://github.com/openweft/weft-drivers"
+  [[params.footerColumns.links]]
+    name = "weft-microvm-init"
+    url  = "https://github.com/openweft/weft-microvm-init"
+
+[[params.footerColumns]]
+  title = "Community"
+  [[params.footerColumns.links]]
+    name = "GitHub org"
+    url  = "https://github.com/openweft"
+  [[params.footerColumns.links]]
+    name = "Issues"
+    url  = "https://github.com/openweft/weft/issues"
+  [[params.footerColumns.links]]
+    name = "Discussions"
+    url  = "https://github.com/openweft/weft/discussions"
+
+# Navigation menu — Hugo renders this in the topnav via
+# {{ range .Site.Menus.main }}. The "after" weight on GitHub
+# pins it to the end of the list.
+[menu]
+  [[menu.main]]
+    identifier = "topology"
+    name       = "Topology"
+    url        = "#topology"
+    weight     = 5
+  [[menu.main]]
+    identifier = "what"
+    name       = "What"
+    url        = "#what"
+    weight     = 10
+  [[menu.main]]
+    identifier = "api"
+    name       = "API"
+    url        = "#api"
+    weight     = 15
+  [[menu.main]]
+    identifier = "flavors"
+    name       = "Flavors"
+    url        = "#flavors"
+    weight     = 18
+  [[menu.main]]
+    identifier = "design"
+    name       = "Design"
+    url        = "#design"
+    weight     = 20
+  [[menu.main]]
+    identifier = "components"
+    name       = "Components"
+    url        = "#components"
+    weight     = 30

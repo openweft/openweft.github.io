@@ -1,0 +1,226 @@
+{{ define "main" }}
+<section class="hero">
+  <div class="container">
+    {{ with .Site.Params.heroEyebrow }}<div class="eyebrow">{{ . }}</div>{{ end }}
+    <h1>
+      <span class="accent">{{ .Site.Params.heroAccent }}</span>
+      {{- with .Site.Params.statusBadge }}<span class="status">{{ . }}</span>{{ end -}}
+    </h1>
+    {{ with .Site.Params.heroTagline }}<p class="tag">{{ . }}</p>{{ end }}
+    <div class="intro">
+      {{ range .Site.Params.heroIntro }}<p>{{ . | safeHTML }}</p>{{ end }}
+    </div>
+    {{ with .Site.Params.heroCTAs }}
+      <div class="cta-row">
+        {{ range . }}
+          <a class="btn btn-{{ .style | default "primary" }}" href="{{ .url }}">
+            {{ .label }} <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        {{ end }}
+      </div>
+    {{ end }}
+
+    {{ partial "mesh.html" . }}
+  </div>
+</section>
+
+<div class="container">
+  <section id="topology">
+    <span class="section-eyebrow">Distributed by design</span>
+    <h2>Three datacenters, one platform</h2>
+    <p>
+      The mesh above is the topological view ; the diagram below is the spatial one. Each <strong>DC</strong>
+      sits on its own ground plane — racks of physical hosts, each running a stack of microVMs. The dashed
+      cyan threads are the <strong>WireGuard overlay</strong> : every microVM peers with every other across
+      the WAN, so tenant workloads (sky-blue), infrastructure microVMs (indigo : <code>etcd</code>,
+      <code>nats</code>, <code>dex</code>, <code>zot</code>, <code>weft</code>, <code>weft-network</code>,
+      <code>envoy</code>, <code>otel-collector</code>, <code>victoriametrics</code>, <code>perses</code>),
+      and <strong>CubeFS</strong> storage
+      microVMs (teal : S3 + POSIX volumes) share the same flat address space regardless of which AZ they land in.
+    </p>
+    <figure class="topology">
+      <img src="{{ "img/mesh-3d.svg" | relURL }}" alt="Isometric view of three datacenters connected by a WireGuard mesh" loading="lazy"/>
+    </figure>
+  </section>
+
+  <section id="what">
+    <span class="section-eyebrow">Quick start</span>
+    <h2>What you can do today</h2>
+    <pre><code># Run as the platform's control plane (single host or cluster node)
+$ weft agent
+
+# From another terminal — single host or any cluster client:
+$ weft project create team-alpha
+$ weft microvm create web-1 --image alpine:3.21 --project team-alpha
+$ weft microvm start web-1
+
+# Stream live events
+$ weft events --kind-prefix microvm.
+
+# Bring up the infrastructure services (etcd, dex, zot, nats, cubefs, otel) in dependency order
+$ weft infra bootstrap
+$ weft infra status</code></pre>
+    <p>
+      The CLI talks to a running <code>weft agent</code> over gRPC ; on a Mac laptop the same binary plays both
+      roles, so there is no separate daemon to install.
+    </p>
+  </section>
+
+  <section id="api">
+    <span class="section-eyebrow">Multi-DC endpoints</span>
+    <h2>API access</h2>
+    <p>
+      Each DC runs one <code>weft agent</code> microVM that exposes the gRPC API on a stable address.
+      Clients resolve them via <strong>SRV records served by the per-DC CoreDNS microVMs</strong> and
+      retry against the next server on failure — the same pattern as Consul or Nomad. No external
+      load-balancer, no anycast, no extra component to operate.
+    </p>
+    <pre><code># SRV record served by CoreDNS, one entry per DC
+_weft._tcp.weft.internal.  IN SRV  0 33 7443 weft-a.weft.internal.
+_weft._tcp.weft.internal.  IN SRV  0 33 7443 weft-b.weft.internal.
+_weft._tcp.weft.internal.  IN SRV  0 33 7443 weft-c.weft.internal.
+
+# Client picks any agent ; reads are served locally,
+# writes are forwarded to the etcd Raft leader transparently.
+$ weft --servers _weft._tcp.weft.internal vm list</code></pre>
+    <ul class="features">
+      <li><strong>Stateless auth</strong> — every agent caches <a href="https://dexidp.io">dex</a>'s JWKs, so OIDC token validation never crosses a DC boundary.</li>
+      <li><strong>Transparent write routing</strong> — the contacted agent proposes via etcd Raft ; clients never have to know which DC holds the leader.</li>
+      <li><strong>Public ingress, same shape</strong> — multi-A DNS resolves <code>api.weft.example.com</code> to one public IP per DC ; the client retries the next on failure.</li>
+      <li><strong>Stickiness for streams</strong> — long-lived watches (<code>weft events</code>) stay pinned to the agent that accepted them ; SRV reshuffles only on reconnect.</li>
+    </ul>
+  </section>
+
+  <section id="networking">
+    <span class="section-eyebrow">Programmable network</span>
+    <h2>Routers &amp; load balancers</h2>
+    <p>
+      Tenant workloads need more than a flat WireGuard mesh : the platform exposes
+      <strong>routers</strong> (mesh ↔ mesh peering, or mesh ↔ public Internet egress)
+      and <strong>load balancers</strong> (L4 / L7 in front of microVMs). Both are
+      first-class resources : declare them in HCL or via the dashboard, the
+      data plane reconciles.
+    </p>
+    <ul class="features">
+      <li><strong>Data plane</strong> — <a href="https://www.envoyproxy.io">Envoy</a>
+        (<a href="https://www.cncf.io/projects/envoy/">CNCF graduated</a>) for L4 / L7,
+        one set per DC ; <a href="https://www.wireguard.com">WireGuard</a> for
+        mesh-to-mesh peering ; VyOS or FRR for BGP egress when a tenant needs
+        a public ASN.</li>
+      <li><strong>Control plane</strong> — <code>weft-network</code>, a thin
+        Go binary that subscribes to vzd's event stream (LoadBalancer,
+        Router, Network, microVM) and compiles the desired state into
+        <strong>Envoy xDS snapshots</strong> + WireGuard configs. Three replicas, leader
+        elected via etcd ; sub-second failover. Same controller pattern as
+        Contour / Istio, except the source-of-truth is vzd rather than a
+        Kubernetes API.</li>
+      <li><strong>Multi-DC HA</strong> — N Envoy instances per DC ; clients
+        reach them through multi-A or SRV DNS (one record per DC) and retry
+        the next on failure. Same shape the <code>weft agent</code> endpoints
+        already use — no anycast, no external load balancer.</li>
+    </ul>
+  </section>
+
+  <section id="telemetry">
+    <span class="section-eyebrow">Observability</span>
+    <h2>Telemetry</h2>
+    <p>
+      Every weft component speaks <a href="https://opentelemetry.io">OpenTelemetry</a>.
+      Control-plane daemons (<code>weft agent</code>, drivers, <code>weft-webui</code>) export
+      metrics on a Prometheus-shaped <code>/metrics</code> endpoint ; future work adds traces and logs
+      via the OTLP gRPC exporter.
+    </p>
+    <p>
+      The collection plane runs as three infra microVMs alongside the rest of the platform :
+    </p>
+    <ul class="features">
+      <li><strong><code>otel-collector</code></strong> — one replica per AZ. Scrapes the admin port of every
+        weft daemon and webui (<strong>over the WireGuard mesh</strong>, so the public listener never
+        exposes the TSDB). Aggregates, filters PII, then ships everything to the metric store.</li>
+      <li><strong><code>victoriametrics</code></strong> — long-term Prometheus-compatible storage
+        (<a href="https://www.cncf.io/projects/victoriametrics/">CNCF sandbox</a>). Single-binary, low-overhead,
+        scales horizontally when needed. PromQL on the read side, so existing dashboards transfer over.</li>
+      <li><strong><code>perses</code></strong> — dashboards as code (<a href="https://www.cncf.io/projects/perses/">CNCF sandbox</a>),
+        SSO via the cluster's <code>dex</code> microVM so operators sign in with the same OIDC identity they use for the CLI
+        and webui. Dashboards live in HCL alongside the rest of the cluster config ; alerting routes through Alertmanager.</li>
+    </ul>
+    <p>
+      The admin-facing weft-webui ports expose per-user activity counters
+      (<code>weft_webui_user_actions_total{sub,action}</code>, <code>weft_webui_auth_logins_total{result}</code>)
+      alongside the usual HTTP / gRPC histograms — so an operator can answer
+      <em>"who pushed which artifact, when ?"</em> from the dashboard rather than grepping logs.
+    </p>
+  </section>
+
+  <section id="flavors">
+    <span class="section-eyebrow">Compute &amp; storage</span>
+    <h2>Flavors, volumes &amp; shares</h2>
+    <p>
+      Three primitives, deliberately separate. A <strong>flavor</strong> is the compute envelope — vCPU,
+      RAM, an optional cap on ephemeral scratch. A <strong>volume</strong> is single-attach block storage.
+      A <strong>share</strong> is a <a href="https://www.cncf.io/projects/cubefs/">CubeFS</a>-backed POSIX
+      filesystem that many microVMs mount at once (read-write-many). Keeping them decoupled is what lets a
+      flavor stay reusable across very different workloads.
+    </p>
+    <pre><code># Flavor — compute envelope (vCPU, RAM, optional ephemeral scratch)
+$ weft flavor create small --vcpu 2 --ram 4Gi --ephemeral 8Gi
+
+# Volume — single-attach block storage : host device passthrough, or a file image
+$ weft volume create pg-data --type block --source /dev/nvme1n1 --project team-alpha
+$ weft microvm create db-1 --flavor small --image postgres:16 --volume pg-data:/var/lib/postgresql
+
+# Share — a CubeFS POSIX filesystem several microVMs mount concurrently (RWX)
+$ weft share create team-data --backend cubefs --size 2Ti --project team-alpha
+$ weft microvm create nb-1 --flavor small --image jupyter:latest --share team-data:/data
+$ weft microvm create nb-2 --flavor small --image jupyter:latest --share team-data:/data   # same share, live</code></pre>
+    <ul class="features">
+      <li><strong>No root disk to size</strong> — the rootfs is the OCI image itself (<code>weft-microvm-init</code> pivot-roots it over virtio-fs) plus a thin writable layer. So a flavor only caps the <em>ephemeral scratch</em> ; there is no persistent root volume to provision.</li>
+      <li><strong>Volume — single-attach block (RWO)</strong> — sized or sourced at creation and bound to one microVM, the way an instance type and a block volume are separate in the public clouds. <code>block</code> passes a host device (NVMe / partition) straight through ; <code>file</code> is a host-side image. Both surface as virtio-blk via the <code>weft</code> Volume driver.</li>
+      <li><strong>Share — multi-attach POSIX (RWX)</strong> — a CubeFS filesystem mounted concurrently by many microVMs, the way EFS or Filestore work : ideal for JupyterHub notebooks over a common dataset, or any fan-out of workers on shared data. The same bytes are reachable as objects through CubeFS's S3 endpoint.</li>
+      <li><strong>Storage workloads, illustrated</strong> — a CubeFS DataNode is a modest flavor plus a large pass-through block volume ; a MetaNode is a RAM-heavy flavor with almost no disk. Same primitives, different mix.</li>
+    </ul>
+  </section>
+
+  <section id="design">
+    <span class="section-eyebrow">Architecture</span>
+    <h2>Design</h2>
+    <ul class="features">
+      <li><strong>Multi-DC control plane</strong> — three <code>weft</code> control-plane instances form an etcd quorum (one per AZ). Losing one DC keeps the platform writable ; the dispatch table re-routes around the failed host pool.</li>
+      <li><strong>Multi-hypervisor</strong> — drivers load via <a href="https://github.com/hashicorp/go-plugin">go-plugin</a>. Apple's Virtualization framework lands first (<code>weft-driver-vz</code>) ; Linux KVM (<code>weft-driver-kvm</code>) and OpenBSD's vmd (<code>weft-driver-vmd</code>) are the next siblings.</li>
+      <li><strong>Multi-tenant</strong> — every resource is UUID-keyed and owned by a project + user. ACLs are first-class : OIDC tokens from <a href="https://dexidp.io">dex</a> carry tenant grants ; <code>weft-client</code> threads them onto every gRPC call.</li>
+      <li><strong>Multi-AZ + multi-rack placement</strong> — HA intent expressed declaratively. A 3-replica NATS cluster declares <code>placement { count = 3, az = "different", rack = "different", host = "different" }</code> ; the scheduler picks one host per replica honouring the proximity hierarchy <code>AZ ⊃ Rack ⊃ Host</code>.</li>
+      <li><strong>Infrastructure as micro-VMs</strong> — etcd, dex, zot, NATS, CoreDNS, CubeFS (distributed storage : S3 + POSIX volumes), the networking control plane (<code>weft-network</code> + <code>envoy</code> per DC), and the observability stack (<code>otel-collector</code> / <code>victoriametrics</code> / <code>perses</code>) all run as weft-microvm-init micro-VMs on the same substrate as user workloads. <strong>Every one is a <a href="https://www.cncf.io/projects/">CNCF</a> project</strong> (or a thin weft glue around CNCF projects) — etcd, CoreDNS, CubeFS &amp; Envoy graduated, NATS &amp; OpenTelemetry incubating, dex, zot, VictoriaMetrics &amp; Perses sandbox — so the platform stands entirely on vendor-neutral, cloud-native foundations. One management plane, <code>weft start / stop / status</code> works for everything.</li>
+      <li><strong>HCL over JSON</strong> for configs and plans. Comments, references, expressive types. JSON only for append-only log streams.</li>
+      <li><strong>Go-native, no C dependencies in the control plane</strong>. Drivers can use cgo where the framework needs it (Apple-VZ does) ; the daemon itself doesn't.</li>
+    </ul>
+  </section>
+
+  <section id="components">
+    <span class="section-eyebrow">Modules</span>
+    <h2>Components</h2>
+    <div class="grid">
+      <div class="card"><h4>weft</h4><p>Single binary — control daemon (<code>weft agent</code>) + CLI subcommands (<code>weft microvm</code>, <code>weft project</code>, …).</p></div>
+      <div class="card"><h4>weft-proto</h4><p>gRPC contract and generated stubs. Stable wire boundary between the daemon, the CLI, and the drivers.</p></div>
+      <div class="card"><h4>weft-drivers</h4><p>Driver-interface module — Hypervisor / Network / Volume / Image. Drivers ship as go-plugin subprocesses.</p></div>
+      <div class="card"><h4>weft-driver-vz</h4><p>Driver for Apple's Virtualization framework. Boots VMs on macOS via the upstream <code>Code-Hex/vz</code> bindings.</p></div>
+      <div class="card"><h4>weft-client</h4><p>Shared dial / token / event-stream helpers consumed by the <code>weft</code> binary and the Terraform provider.</p></div>
+      <div class="card"><h4>weft-ui</h4><p>macOS graphical dashboard — same gRPC API as the CLI.</p></div>
+      <div class="card"><h4>weft-microvm-init</h4><p>Tenant micro-VM init — minimal PID 1 that pivot-roots an OCI image and runs it through an embedded <code>crun</code>.</p></div>
+      <div class="card"><h4>cloud-boot</h4><p>UEFI bootloader for boot-from-OCI workloads. Pure-Go, multi-arch (arm64 / amd64 / riscv64 / loongarch64).</p></div>
+    </div>
+  </section>
+
+  <section id="status">
+    <span class="section-eyebrow">Project</span>
+    <h2>Status</h2>
+    <p>
+      Weft is in early development. The codebase is on GitHub under
+      <a href="https://github.com/openweft">github.com/openweft</a>.
+    </p>
+    <p>
+      If you'd like to follow along or contribute, the <a href="https://github.com/openweft/weft">weft</a> repo
+      is the natural starting point ; the drivers (<code>weft-driver-vz</code>, …) live in sibling repos.
+    </p>
+  </section>
+</div>
+{{ end }}

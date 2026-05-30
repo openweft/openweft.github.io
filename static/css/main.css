@@ -1,0 +1,661 @@
+/* Weft landing — light-first palette, woven background motif,
+   animated SVG mesh. Tokens defined for light (default) + dark
+   mode ; everything below reads from them so a theme change
+   touches one place.
+
+   Design DNA inspired by enterprise infra sites (clean light
+   ground, deep-blue accents, geometric pattern) — but the
+   motif here is literally a weft : perpendicular threads, our
+   own textile metaphor rather than a borrowed diamond+wave. */
+:root {
+  /* Light-first surface — soft off-white with subtle blue tint */
+  --bg:        #f6f8ff;
+  --bg-2:      #e8efff;
+  --bg-3:      #d6e1ff;
+  --surface:   #ffffff;
+  --fg:        #0b1733;
+  --fg-soft:   #233556;
+  --muted:     #5a6d96;
+  --border:    #c7d5f5;
+  --border-hi: #93b1e8;
+
+  /* Accents — deeper cyan + blue for legibility on light surfaces */
+  --accent:    #0891b2;   /* cyan-600 — primary highlight */
+  --accent-2:  #2563eb;   /* blue-600 */
+  --accent-3:  #4f46e5;   /* indigo-600 */
+  --accent-hi: #0e7490;   /* cyan-700 — hover */
+
+  --code-bg:   #eef3ff;
+  --code-fg:   #0b1733;
+  --thread:    #0891b2;
+
+  /* Mesh tokens — saturated darker blues so the diagram reads
+     on the light background */
+  --mesh-edge:        rgba(37, 99, 235, 0.32);
+  --mesh-edge-hi:     rgba(37, 99, 235, 0.85);
+  --mesh-cp-fill:     #1d4ed8;
+  --mesh-cp-halo:     rgba(29, 78, 216, 0.30);
+  --mesh-agent-fill:  #60a5fa;
+  --mesh-agent-halo:  rgba(96, 165, 250, 0.22);
+  --mesh-arch-fill:   #2563eb;
+  --mesh-arch-halo:   rgba(37, 99, 235, 0.30);
+  --mesh-distro-fill: #60a5fa;
+  --mesh-distro-halo: rgba(96, 165, 250, 0.22);
+  --mesh-hub-fill:    #1d4ed8;
+  --mesh-hub-halo:    rgba(29, 78, 216, 0.36);
+  --mesh-microvm-fill:  #38bdf8;
+  --mesh-microvm-halo:  rgba(56, 189, 248, 0.45);
+  --mesh-edge-mesh:     rgba(56, 189, 248, 0.75);
+  --mesh-infra-fill:    #818cf8;
+  --mesh-infra-halo:    rgba(129, 140, 248, 0.45);
+  --mesh-infra-label:   rgba(67, 56, 202, 0.95);
+  --mesh-label-fg:      #1e3a8a;
+  --mesh-container-dc-fill:     rgba(37, 99, 235, 0.06);
+  --mesh-container-dc-stroke:   rgba(37, 99, 235, 0.55);
+  --mesh-container-rack-fill:   rgba(37, 99, 235, 0.14);
+  --mesh-container-rack-stroke: rgba(37, 99, 235, 0.45);
+  --mesh-container-label-fg:    rgba(30, 58, 138, 0.85);
+
+  /* Hero ambient gradients + woven backdrop */
+  --hero-gradient-1:  rgba(96, 165, 250, 0.30);
+  --hero-gradient-2:  rgba(37, 99, 235, 0.22);
+  --weft-thread:      rgba(37, 99, 235, 0.05);
+  --weft-thread-hi:   rgba(37, 99, 235, 0.09);
+}
+
+/* Dark palette is opt-in only (set <html data-theme="dark">) — it does
+   NOT follow the OS prefers-color-scheme, so the page stays light by
+   default for everyone regardless of their system setting. */
+:root[data-theme="dark"] {
+    --bg:        #1a2545;
+    --bg-2:      #243363;
+    --bg-3:      #2e4079;
+    --surface:   #2a3a6e;
+    --fg:        #eef2ff;
+    --fg-soft:   #c5d1ee;
+    --muted:     #94a4cd;
+    --border:    #3a4d8a;
+    --border-hi: #506dbe;
+
+    --accent:    #22d3ee;
+    --accent-2:  #38bdf8;
+    --accent-3:  #818cf8;
+    --accent-hi: #67e8f9;
+
+    --code-bg:   #14213f;
+    --code-fg:   #d5e3ff;
+
+    --mesh-edge:        rgba(147, 197, 253, 0.32);
+    --mesh-edge-hi:     rgba(191, 219, 254, 0.85);
+    --mesh-cp-fill:     #93c5fd;
+    --mesh-cp-halo:     rgba(147, 197, 253, 0.30);
+    --mesh-agent-fill:  #60a5fa;
+    --mesh-agent-halo:  rgba(96, 165, 250, 0.22);
+    --mesh-arch-fill:   #93c5fd;
+    --mesh-arch-halo:   rgba(147, 197, 253, 0.30);
+    --mesh-distro-fill: #60a5fa;
+    --mesh-distro-halo: rgba(96, 165, 250, 0.22);
+    --mesh-hub-fill:    #bfdbfe;
+    --mesh-hub-halo:    rgba(191, 219, 254, 0.36);
+    --mesh-microvm-fill:  #7dd3fc;
+    --mesh-microvm-halo:  rgba(125, 211, 252, 0.50);
+    --mesh-edge-mesh:     rgba(125, 211, 252, 0.80);
+    --mesh-infra-fill:    #a5b4fc;
+    --mesh-infra-halo:    rgba(165, 180, 252, 0.50);
+    --mesh-infra-label:   rgba(199, 210, 254, 0.95);
+    --mesh-label-fg:      #bfdbfe;
+    --mesh-container-dc-fill:     rgba(96, 165, 250, 0.08);
+    --mesh-container-dc-stroke:   rgba(147, 197, 253, 0.55);
+    --mesh-container-rack-fill:   rgba(96, 165, 250, 0.15);
+    --mesh-container-rack-stroke: rgba(147, 197, 253, 0.45);
+    --mesh-container-label-fg:    rgba(219, 234, 254, 0.95);
+
+    --hero-gradient-1:  rgba(34, 211, 238, 0.13);
+    --hero-gradient-2:  rgba(129, 140, 248, 0.18);
+    --weft-thread:      rgba(125, 211, 252, 0.08);
+    --weft-thread-hi:   rgba(125, 211, 252, 0.13);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  margin: 0;
+  line-height: 1.65;
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Subtle woven backdrop : two perpendicular thread sets at
+     low opacity. This is the *literal* weft metaphor — our
+     equivalent of the diamond/wave motif used by similar
+     infra sites, but built from the project's own DNA. */
+  background-image:
+    repeating-linear-gradient(90deg,
+      var(--weft-thread) 0,    var(--weft-thread) 1px,
+      transparent       1px,   transparent       48px),
+    repeating-linear-gradient(0deg,
+      var(--weft-thread-hi) 0, var(--weft-thread-hi) 1px,
+      transparent          1px, transparent          48px);
+  background-attachment: fixed;
+}
+
+.container { max-width: 1080px; margin: 0 auto; padding: 0 1.5rem; }
+/* Hero needs more room for the wide mesh SVG */
+.hero .container { max-width: 1500px; }
+
+/* ---------- NAV ---------- */
+nav.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 0;
+  font-size: 0.92rem;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+}
+nav.topnav .container { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; }
+nav.topnav .brand {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: 1.05rem;
+  color: var(--fg);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+nav.topnav .brand .mark {
+  display: inline-block;
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-3) 100%);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+nav.topnav .links { display: flex; align-items: center; gap: 1.4rem; }
+nav.topnav .links a {
+  color: var(--fg-soft);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+nav.topnav .links a:hover { color: var(--accent); }
+nav.topnav .cta {
+  margin-left: 0.4rem;
+}
+
+/* Light / dark toggle */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 1px solid var(--border-hi);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--fg-soft);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.theme-toggle svg { width: 1.05rem; height: 1.05rem; }
+/* Show the moon in light mode (click → dark), the sun in dark mode. */
+.theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun  { display: inline; }
+
+/* ---------- BUTTONS ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.05rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.18s, box-shadow 0.18s;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  color: #00131a;
+  border-color: transparent;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset, 0 6px 18px -8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -8px color-mix(in srgb, var(--accent) 80%, transparent);
+  color: #00131a;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--border-hi);
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn .arrow { transition: transform 0.18s; }
+.btn:hover .arrow { transform: translateX(2px); }
+
+/* ---------- HERO ---------- */
+.hero {
+  position: relative;
+  padding: 5rem 0 2.5rem;
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -10% -10% 30% -10%;
+  background:
+    radial-gradient(60% 60% at 18% 25%, var(--hero-gradient-1) 0%, transparent 70%),
+    radial-gradient(50% 50% at 85% 75%, var(--hero-gradient-2) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero .container { position: relative; z-index: 1; }
+.hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 1.1rem;
+}
+.hero .eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 1.8rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent) 100%);
+}
+.hero h1 {
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  margin: 0 0 1rem;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  line-height: 1.05;
+}
+.hero h1 .accent {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 55%, var(--accent-3) 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+.hero .tag {
+  font-size: 1.2rem;
+  color: var(--fg-soft);
+  margin: 0 0 1.8rem;
+  font-style: italic;
+  max-width: 60ch;
+}
+.hero .intro p {
+  font-size: 1.05rem;
+  margin: 0 0 1.1rem;
+  max-width: 72ch;
+  color: var(--fg-soft);
+}
+.hero .intro p strong, .hero .intro p em { color: var(--fg); }
+.hero .cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.8rem 0 0;
+}
+
+/* ---------- MESH ---------- */
+.mesh {
+  position: relative;
+  margin: 2.5rem 0 1rem;
+  padding: 1rem 0 0.5rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, transparent 0%, var(--bg-2) 60%, transparent 100%);
+}
+.mesh svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.mesh-caption {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.mesh-caption strong { color: var(--accent); }
+
+.mesh .edge    { stroke: var(--mesh-edge);    stroke-width: 1.4; fill: none; stroke-linecap: round; }
+.mesh .edge.hi { stroke: var(--mesh-edge-hi); stroke-width: 2.2; }
+.mesh .label   { fill: var(--mesh-label-fg); font: 600 13px ui-sans-serif, system-ui, sans-serif; text-anchor: middle; letter-spacing: 0.04em; }
+
+.mesh .container-dc {
+  fill:   var(--mesh-container-dc-fill);
+  stroke: var(--mesh-container-dc-stroke);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 6;
+}
+.mesh .container-rack {
+  fill:   var(--mesh-container-rack-fill);
+  stroke: var(--mesh-container-rack-stroke);
+  stroke-width: 1;
+}
+.mesh .container-label {
+  fill: var(--mesh-container-label-fg);
+  font: 700 14px ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.mesh .container-label-rack {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+}
+
+.mesh .kind-cp     .halo { fill: var(--mesh-cp-halo);     animation: nodepulse 2.8s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.mesh .kind-cp     .core { fill: var(--mesh-cp-fill); }
+.mesh .kind-agent  .halo { fill: var(--mesh-agent-halo);  animation: nodepulse 3.8s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.mesh .kind-agent  .core { fill: var(--mesh-agent-fill); }
+.mesh .kind-arch   .halo { fill: var(--mesh-arch-halo);   animation: nodepulse 3.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.mesh .kind-arch   .core { fill: var(--mesh-arch-fill); }
+.mesh .kind-distro .halo { fill: var(--mesh-distro-halo); animation: nodepulse 4s   ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.mesh .kind-distro .core { fill: var(--mesh-distro-fill); }
+.mesh .kind-hub    .halo { fill: var(--mesh-hub-halo);    animation: nodepulse 2.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.mesh .kind-hub    .core { fill: var(--mesh-hub-fill); }
+.mesh .kind-microvm .halo { fill: var(--mesh-microvm-halo); animation: nodepulse 2.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.mesh .kind-microvm .core { fill: var(--mesh-microvm-fill); }
+.mesh .kind-infra .halo { fill: var(--mesh-infra-halo); animation: nodepulse 2.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.mesh .kind-infra .core { fill: var(--mesh-infra-fill); }
+.mesh .kind-infra .label {
+  fill: var(--mesh-infra-label);
+  font: 600 8px ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.mesh .plane-label {
+  fill: var(--mesh-container-label-fg);
+  font: 700 12px ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  text-anchor: middle;
+}
+.mesh .edge.kind-mesh {
+  stroke: var(--mesh-edge-mesh);
+  stroke-width: 1.6;
+  stroke-dasharray: 3 5;
+}
+.mesh .edge.hi.kind-mesh {
+  stroke: var(--mesh-edge-hi);
+  stroke-width: 2.4;
+  stroke-dasharray: 4 4;
+}
+
+@keyframes nodepulse {
+  0%, 100% { transform: scale(1);   opacity: 0.85; }
+  50%      { transform: scale(1.45); opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh .halo { animation: none; }
+  .mesh animateMotion { display: none; }
+}
+
+/* ---------- SECTIONS ---------- */
+section[id] {
+  scroll-margin-top: 5rem;
+  padding-top: 1rem;
+}
+.section-eyebrow {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+}
+h2 {
+  margin: 3rem 0 1.2rem;
+  font-size: 1.85rem;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  line-height: 1.15;
+}
+h2::after {
+  content: "";
+  display: block;
+  width: 2.6rem;
+  height: 2px;
+  margin-top: 0.7rem;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+  border-radius: 2px;
+}
+h3 { font-size: 1.05rem; margin-top: 1.5rem; }
+
+p { color: var(--fg-soft); }
+strong, b { color: var(--fg); }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.88em;
+  border: 1px solid var(--border);
+}
+pre {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 1.1rem 1.3rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  border: 1px solid var(--border);
+  position: relative;
+}
+pre::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  right: 1rem;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+  opacity: 0.6;
+}
+pre code { background: none; padding: 0; font-size: 1em; border: 0; }
+
+ul.features { padding-left: 0; list-style: none; }
+ul.features li {
+  margin-bottom: 0.85rem;
+  padding-left: 1.4rem;
+  position: relative;
+  color: var(--fg-soft);
+}
+ul.features li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 1px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  transform: rotate(45deg);
+}
+ul.features li strong { color: var(--fg); }
+
+/* ---------- TOPOLOGY (3D SVG figure) ---------- */
+figure.topology {
+  margin: 1.8rem 0 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 70%),
+    var(--bg-2);
+  box-shadow: 0 20px 60px -30px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+figure.topology img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---------- CARDS / GRID ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.8rem 0;
+}
+.card {
+  border: 1px solid var(--border);
+  padding: 1.15rem 1.25rem;
+  border-radius: 10px;
+  background: var(--surface);
+  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent 0%, color-mix(in srgb, var(--accent) 0%, transparent) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  transition: background 0.22s;
+}
+.card:hover {
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.card:hover::before {
+  background: linear-gradient(135deg, var(--accent) 0%, transparent 70%);
+}
+.card h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fg);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  letter-spacing: -0.01em;
+}
+.card p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+
+/* ---------- STATUS PILL ---------- */
+.status {
+  display: inline-block;
+  padding: 0.18rem 0.65rem;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin-left: 0.6rem;
+  vertical-align: middle;
+}
+
+/* ---------- FOOTER ---------- */
+footer.site {
+  margin-top: 5rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+footer.site .footer-cols {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 2.5rem;
+  padding: 2.5rem 0 1.5rem;
+}
+footer.site .footer-brand .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--fg);
+  margin-bottom: 0.6rem;
+}
+footer.site .footer-brand .brand .mark {
+  display: inline-block;
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-3) 100%);
+}
+footer.site .footer-brand p { margin: 0; max-width: 28ch; }
+footer.site h5 {
+  margin: 0 0 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+footer.site ul { list-style: none; padding: 0; margin: 0; }
+footer.site li { margin: 0 0 0.45rem; }
+footer.site a { color: var(--muted); text-decoration: none; }
+footer.site a:hover { color: var(--accent); }
+footer.site .footer-bottom {
+  border-top: 1px solid var(--border);
+  padding: 1.1rem 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  font-size: 0.8rem;
+}
+footer.site .footer-bottom .small { color: var(--muted); }
+
+@media (max-width: 760px) {
+  footer.site .footer-cols { grid-template-columns: 1fr 1fr; }
+  nav.topnav .links { gap: 0.9rem; }
+  nav.topnav .links .menu-link { display: none; }
+}
+@media (max-width: 480px) {
+  footer.site .footer-cols { grid-template-columns: 1fr; gap: 1.4rem; }
+}
+
+a { color: var(--accent); text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: 2px; }
+a:hover { color: var(--accent-hi); }
+
+/* Selection */
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--fg);
+}

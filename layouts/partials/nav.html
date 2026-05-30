@@ -1,0 +1,23 @@
+<nav class="topnav">
+  <div class="container">
+    <a class="brand" href="/">
+      <span class="mark" aria-hidden="true"></span>
+      {{ .Site.Params.brand }}
+    </a>
+    <div class="links">
+      {{ range .Site.Menus.main }}<a class="menu-link" href="{{ .URL }}">{{ .Name }}</a>{{ end }}
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle light / dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M19.4 4.6l-1.6 1.6M6.2 17.8l-1.6 1.6"/>
+        </svg>
+      </button>
+      <a class="cta btn btn-ghost" href="https://github.com/{{ .Site.Params.github }}">
+        GitHub <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</nav>

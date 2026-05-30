@@ -19,8 +19,6 @@
         {{ end }}
       </div>
     {{ end }}
-
-    {{ partial "mesh.html" . }}
   </div>
 </section>
 
@@ -29,14 +27,14 @@
     <span class="section-eyebrow">Distributed by design</span>
     <h2>Three datacenters, one platform</h2>
     <p>
-      The mesh above is the topological view ; the diagram below is the spatial one. Each <strong>DC</strong>
-      sits on its own ground plane — racks of physical hosts, each running a stack of microVMs. The dashed
-      cyan threads are the <strong>WireGuard overlay</strong> : every microVM peers with every other across
-      the WAN, so tenant workloads (sky-blue), infrastructure microVMs (indigo : <code>etcd</code>,
-      <code>nats</code>, <code>dex</code>, <code>zot</code>, <code>weft</code>, <code>weft-network</code>,
-      <code>otel-collector</code>, <code>victoriametrics</code>, <code>perses</code>),
-      and <strong>CubeFS</strong> storage
-      microVMs (teal : S3 + POSIX volumes) share the same flat address space regardless of which AZ they land in.
+      Each <strong>DC</strong> sits on its own ground plane — racks of physical hosts, each
+      running a stack of microVMs. The dashed cyan threads are the <strong>WireGuard
+      overlay</strong> : every microVM peers with every other across the WAN, so tenant
+      workloads (sky-blue), infrastructure microVMs (indigo : <code>etcd</code>,
+      <code>nats</code>, <code>dex</code>, <code>zot</code>, <code>weft</code>,
+      <code>weft-network</code>, <code>otel-collector</code>, <code>victoriametrics</code>,
+      <code>perses</code>), and <strong>CubeFS</strong> storage microVMs (teal : S3 + POSIX
+      volumes) share the same flat address space regardless of which AZ they land in.
     </p>
     <figure class="topology">
       <img src="{{ "img/mesh-3d.svg" | relURL }}" alt="Isometric view of three datacenters connected by a WireGuard mesh" loading="lazy"/>

@@ -12,10 +12,19 @@ Three primitives, deliberately separate :
 
 ## Block volumes — reflink CoW
 
-Cloning a VM's disk uses `FICLONE` (reflink) when the host filesystem
-supports it (btrfs, xfs+reflink, bcachefs, zfs). End-to-end validated on
-Debian arm64 with btrfs (`strace FICLONE = 0` confirmed). On ext4 the
-`EOPNOTSUPP` is caught and the path falls back to a regular copy.
+Cloning a VM's disk uses copy-on-write on every host filesystem that
+exposes one :
+
+- **Linux** — `ioctl(FICLONE)`. Validated end-to-end on Debian arm64 +
+  btrfs (`strace FICLONE = 0` confirmed). Works on btrfs, xfs (mounted
+  with reflink), bcachefs, and ZFS-on-Linux.
+- **macOS** — `clonefile(2)` on APFS. Same O(1) copy semantics ;
+  weft-driver-vz invokes it when cloning rootfs images on developer
+  laptops and Apple-Silicon hosts where APFS is the only on-disk
+  filesystem.
+- **Fallback** — when the kernel returns `EOPNOTSUPP` (ext4, FAT,
+  cross-volume copies), the path degrades to a regular byte copy
+  rather than failing.
 
 See [`weft/cowclone/`](https://github.com/openweft/weft/tree/main/cowclone)
 and the `imagestore.NewReflink` wiring on the agent side.

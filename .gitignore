@@ -2,3 +2,13 @@
 /public/
 /resources/_gen/
 .hugo_build.lock
+
+# MkDocs build output — mkdocs writes to public/docs/latest per
+# mkdocs.yml, but `mkdocs serve` and `mkdocs build` without `-d`
+# fall back to ./site. Ignore both for safety.
+/site/
+
+# Python venv / cache
+__pycache__/
+*.py[cod]
+.venv/

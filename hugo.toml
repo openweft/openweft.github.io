@@ -136,3 +136,8 @@ disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
     name       = "Components"
     url        = "#components"
     weight     = 30
+  [[menu.main]]
+    identifier = "docs"
+    name       = "Docs"
+    url        = "/docs/"
+    weight     = 40

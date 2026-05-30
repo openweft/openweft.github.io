@@ -26,6 +26,9 @@ env:
   # incompatible template changes. Bump deliberately, not by
   # surprise.
   HUGO_VERSION: 0.161.1
+  # Same pinning rationale for the docs stack. mkdocs-material follows
+  # rapid releases ; pin the major.minor we tested against.
+  PYTHON_VERSION: '3.12'
 
 jobs:
   build:
@@ -45,7 +48,25 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      - name: Build
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install MkDocs + Material + Mike
+        # mkdocs-material : the theme. Mike : versioned docs publisher.
+        # We pin mike even though we don't run it yet — once the first
+        # release lands we swap `mkdocs build` for `mike deploy <ver> latest`
+        # and the version is already a known quantity.
+        run: |
+          pip install --upgrade pip
+          pip install \
+            mkdocs==1.6.1 \
+            mkdocs-material==9.5.49 \
+            mike==2.1.3 \
+            pymdown-extensions==10.12
+
+      - name: Build Hugo landing
         env:
           HUGO_ENVIRONMENT: production
           HUGO_ENV: production
@@ -58,6 +79,33 @@ jobs:
           hugo \
             --gc \
             --minify
+
+      - name: Build MkDocs into public/docs/latest
+        # site_dir in mkdocs.yml points at public/docs/latest, so this
+        # nests the docs build inside the Hugo output — single artifact,
+        # single deploy. When releases start landing, swap this for
+        # `mike deploy --branch=<branch> <version> latest` and copy the
+        # branch into public/docs/.
+        run: |
+          mkdocs build --strict
+
+      - name: Write /docs/ redirect to /docs/latest/
+        run: |
+          mkdir -p public/docs
+          cat > public/docs/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>Weft documentation</title>
+            <link rel="canonical" href="https://openweft.github.io/docs/latest/">
+            <meta http-equiv="refresh" content="0; url=./latest/">
+          </head>
+          <body>
+            <p>Redirecting to <a href="./latest/">/docs/latest/</a>…</p>
+          </body>
+          </html>
+          HTML
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

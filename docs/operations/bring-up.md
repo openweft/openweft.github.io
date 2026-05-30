@@ -156,3 +156,60 @@ behaviour without the Apple-VZ private framework in the loop.
     software. A microVM that boots in ~1 s under Apple-VZ or KVM
     takes several seconds under TCG. Fine for functional testing,
     not for production capacity.
+
+### Apple Silicon host running BOTH drivers (cross-arch builds)
+
+A bare-metal Apple Silicon host can run **both** drivers side-by-side.
+The canonical reason is multi-arch builds : VZ handles the native
+arm64 guests at full Apple-HV speed, and QEMU/TCG covers the foreign
+architectures (amd64 today ; riscv64 / loongarch64 when needed) for
+cross-compile and multi-arch OCI image production.
+
+The host's `drivers` list enumerates everything it can launch. Each
+entry can carry a per-driver `arch` set ; the scheduler matches a
+microVM's required architecture against this set when placing the
+workload.
+
+```hcl
+cluster "weft-build" {
+  hosts = [
+    # Apple Silicon build host — native arm64 via VZ, foreign archs
+    # via QEMU/TCG. The two drivers run as separate go-plugin
+    # subprocesses owned by the same weft-agent ; the scheduler
+    # picks one per microVM based on `arch`.
+    {
+      name = "build-mac-1", os = "darwin", arch = "arm64",
+      drivers {
+        vz   = { arch = ["arm64"] }                        # native, accelerated
+        qemu = { arch = ["amd64", "riscv64", "loongarch64"] }  # emulated
+      }
+    },
+  ]
+
+  # Both driver images are needed — this host pulls both.
+  drivers {
+    vz   = "ghcr.io/openweft/weft-driver-vz:latest"
+    qemu = "ghcr.io/openweft/weft-driver-qemu:latest"
+  }
+
+  microvm {
+    kernel_ref = "ghcr.io/openweft/weft-microvm-kernel:latest"
+  }
+}
+```
+
+A typical multi-arch build pipeline then runs N parallel `weft microvm
+run` calls on the same host — one per target arch — and the agent
+dispatches each to the matching driver :
+
+```text
+$ weft microvm run alpine:3.21 --arch arm64        # → driver = vz (native)
+$ weft microvm run alpine:3.21 --arch amd64        # → driver = qemu (TCG)
+$ weft microvm run alpine:3.21 --arch riscv64      # → driver = qemu (TCG)
+```
+
+The non-native runs are slow (TCG cost — see the warning above), but
+parallel on the same host they're still much cheaper than spinning up
+remote builders : no SSH, no network artifact transfer, the OCI image
+cache is shared between drivers via the host-local
+[`weft-microvm`](https://github.com/openweft/weft-microvm) imagestore.

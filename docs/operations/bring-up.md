@@ -23,12 +23,23 @@ zot, nats → cubefs → otel). See [Infra services](infra.md).
 
 ## Minimal `cluster.hcl`
 
+Each host is one labelled HCL block. The label is the host id ; `address`
+is required, `dc` defaults to the host id, `hypervisor` shortcuts to a
+single-driver host (the modern multi-driver `driver { … }` form lives
+below).
+
 ```hcl
 cluster "weft-lab" {
-  hosts = ["host-1.example"]
+  overlay { subnet = "10.9.0.0/24" }
+
+  host "host-1" {
+    address    = "192.0.2.1"
+    hypervisor = "qemu"
+  }
 
   drivers {
-    qemu = "ghcr.io/openweft/weft-driver-qemu:latest"
+    registry = "ghcr.io/openweft"
+    version  = "latest"
   }
 
   microvm {
@@ -37,16 +48,39 @@ cluster "weft-lab" {
 }
 ```
 
-A 3-DC layout adds two more hosts plus AZ / rack labels :
+A 3-DC layout adds two more `host` blocks with explicit DC labels :
 
 ```hcl
 cluster "weft-prod" {
-  hosts = [
-    { name = "host-a", az = "DC-A", rack = "rack-1" },
-    { name = "host-b", az = "DC-B", rack = "rack-1" },
-    { name = "host-c", az = "DC-C", rack = "rack-1" },
-  ]
-  # … drivers / microvm sections identical
+  overlay { subnet = "10.9.0.0/24" }
+
+  host "host-a" {
+    address    = "192.0.2.1"
+    dc         = "dc1"
+    rack       = "rack-1"
+    hypervisor = "qemu"
+  }
+  host "host-b" {
+    address    = "192.0.2.2"
+    dc         = "dc2"
+    rack       = "rack-1"
+    hypervisor = "qemu"
+  }
+  host "host-c" {
+    address    = "192.0.2.3"
+    dc         = "dc3"
+    rack       = "rack-1"
+    hypervisor = "qemu"
+  }
+
+  drivers {
+    registry = "ghcr.io/openweft"
+    version  = "latest"
+  }
+
+  microvm {
+    kernel_ref = "ghcr.io/openweft/weft-microvm-kernel:latest"
+  }
 }
 ```
 
@@ -63,25 +97,34 @@ This makes mixed clusters straightforward — say two Linux racks for
 production capacity, plus a couple of Apple Silicon developer
 laptops contributing build agents to the same control plane :
 
+!!! info "Topology constraint"
+    `cluster.Validate` accepts **either 1 or 3 hosts** today — the two
+    supported HA shapes. A 2-host or 4+-host layout is rejected. The
+    snippet below illustrates the heterogeneous *form* on a single
+    `host` example ; replicate the block (with distinct `dc` labels)
+    to land on the 3-DC shape.
+
 ```hcl
 cluster "weft-mixed" {
-  hosts = [
-    # Linux production hosts — KVM acceleration via QEMU.
-    { name = "host-a", os = "linux",  az = "DC-A", rack = "rack-1", driver = "qemu" },
-    { name = "host-b", os = "linux",  az = "DC-A", rack = "rack-2", driver = "qemu" },
-    { name = "host-c", os = "linux",  az = "DC-B", rack = "rack-1", driver = "qemu" },
+  overlay { subnet = "10.9.0.0/24" }
 
-    # macOS developer / build hosts — Apple's Virtualization framework.
-    { name = "laptop-1", os = "darwin", az = "DC-C", rack = "desk-1", driver = "vz" },
-    { name = "laptop-2", os = "darwin", az = "DC-C", rack = "desk-2", driver = "vz" },
-  ]
+  # Linux production host — KVM acceleration via QEMU.
+  host "host-a" {
+    address    = "192.0.2.1"
+    os         = "linux"
+    arch       = "amd64"
+    dc         = "dc1"
+    rack       = "rack-1"
+    hypervisor = "qemu"
+  }
+  # …two more `host` blocks with dc = "dc2" / "dc3" to make a 3-DC cluster.
 
-  # Declare both driver images — each host pulls only the one its
-  # `driver` field points at. Local-first cache, then GHCR ; weft
-  # keys the cache by digest so re-pulls are free.
+  # Driver source. `registry` + `version` define defaults ; per-flavour
+  # overrides (vz_ref / qemu_ref) take precedence when set. Each agent
+  # pulls only the driver image it actually needs.
   drivers {
-    qemu = "ghcr.io/openweft/weft-driver-qemu:latest"
-    vz   = "ghcr.io/openweft/weft-driver-vz:latest"
+    registry = "ghcr.io/openweft"
+    version  = "latest"
   }
 
   microvm {
@@ -89,6 +132,11 @@ cluster "weft-mixed" {
   }
 }
 ```
+
+A macOS host on the same cluster mirrors the same shape with
+`os = "darwin"` and `hypervisor = "vz"`. The cluster planner doesn't
+care which driver runs where — the scheduler matches each microVM's
+required arch against the host's declared capability.
 
 The scheduler honours the proximity hierarchy (`AZ ⊃ Rack ⊃ Host`)
 without caring which driver lives on which host — a `placement {
@@ -122,22 +170,26 @@ that runs **QEMU** rather than Apple-VZ. Two situations call for it :
   Apple Silicon) onto the same driver keeps test runs reproducible :
   the same QEMU command line is what CI executed.
 
-`driver = "qemu"` overrides the OS-default driver pick — `os = "darwin"`
-no longer implies `driver = "vz"`. Only the QEMU driver image needs
-to be pulled.
+`hypervisor = "qemu"` overrides the OS-default driver pick — an
+`os = "darwin"` host no longer implies VZ. Only the QEMU driver image
+needs to be pulled.
 
 ```hcl
 cluster "weft-dev-tart" {
-  hosts = [
-    # Apple Silicon host running weft-agent inside a Tart VM.
-    # No nested virt -> Apple-VZ can't run ; fall back to QEMU/TCG.
-    { name = "mac-tart-1", os = "darwin", arch = "arm64", driver = "qemu" },
-  ]
+  overlay { subnet = "10.9.0.0/24" }
 
-  # Only the QEMU driver is needed — no point pulling weft-driver-vz
-  # since no host targets it.
+  # Apple Silicon host running weft-agent inside a Tart VM.
+  # No nested virt -> Apple-VZ can't run ; fall back to QEMU/TCG.
+  host "mac-tart-1" {
+    address    = "192.0.2.1"
+    os         = "darwin"
+    arch       = "arm64"
+    hypervisor = "qemu"
+  }
+
   drivers {
-    qemu = "ghcr.io/openweft/weft-driver-qemu:latest"
+    registry = "ghcr.io/openweft"
+    version  = "latest"
   }
 
   microvm {
@@ -165,31 +217,38 @@ arm64 guests at full Apple-HV speed, and QEMU/TCG covers the foreign
 architectures (amd64 today ; riscv64 / loongarch64 when needed) for
 cross-compile and multi-arch OCI image production.
 
-The host's `drivers` list enumerates everything it can launch. Each
-entry can carry a per-driver `arch` set ; the scheduler matches a
-microVM's required architecture against this set when placing the
-workload.
+The host gains one nested `driver "kind" { … }` block per driver it
+runs ; each declares the guest architectures that driver can launch on
+this host. The scheduler matches a microVM's required architecture
+against this set when placing the workload. When `driver` blocks are
+present, the legacy `hypervisor = "…"` shortcut MUST be omitted —
+they're mutually exclusive.
 
 ```hcl
 cluster "weft-build" {
-  hosts = [
-    # Apple Silicon build host — native arm64 via VZ, foreign archs
-    # via QEMU/TCG. The two drivers run as separate go-plugin
-    # subprocesses owned by the same weft-agent ; the scheduler
-    # picks one per microVM based on `arch`.
-    {
-      name = "build-mac-1", os = "darwin", arch = "arm64",
-      drivers {
-        vz   = { arch = ["arm64"] }                        # native, accelerated
-        qemu = { arch = ["amd64", "riscv64", "loongarch64"] }  # emulated
-      }
-    },
-  ]
+  overlay { subnet = "10.9.0.0/24" }
+
+  # Apple Silicon build host — native arm64 via VZ, foreign archs
+  # via QEMU/TCG. The two drivers run as separate go-plugin
+  # subprocesses owned by the same weft-agent ; the scheduler
+  # picks one per microVM based on `arch`.
+  host "build-mac-1" {
+    address = "192.0.2.1"
+    os      = "darwin"
+    arch    = "arm64"
+
+    driver "vz" {
+      arch = ["arm64"]                          # native, accelerated
+    }
+    driver "qemu" {
+      arch = ["amd64", "riscv64", "loongarch64"] # emulated
+    }
+  }
 
   # Both driver images are needed — this host pulls both.
   drivers {
-    vz   = "ghcr.io/openweft/weft-driver-vz:latest"
-    qemu = "ghcr.io/openweft/weft-driver-qemu:latest"
+    registry = "ghcr.io/openweft"
+    version  = "latest"
   }
 
   microvm {
@@ -200,13 +259,21 @@ cluster "weft-build" {
 
 A typical multi-arch build pipeline then runs N parallel `weft microvm
 run` calls on the same host — one per target arch — and the agent
-dispatches each to the matching driver :
+dispatches each to the matching driver. A `--arch` flag on
+`weft microvm run` is on the roadmap ; today the agent infers the
+arch from the OCI image manifest.
 
-```text
-$ weft microvm run alpine:3.21 --arch arm64        # → driver = vz (native)
-$ weft microvm run alpine:3.21 --arch amd64        # → driver = qemu (TCG)
-$ weft microvm run alpine:3.21 --arch riscv64      # → driver = qemu (TCG)
-```
+!!! warning "Single-driver agent today"
+    The HCL schema, host registry, and scheduler all support multi-driver
+    hosts ; commits [`65d237896`](https://github.com/openweft/weft/commit/65d237896),
+    [`e6ceb7591`](https://github.com/openweft/weft/commit/e6ceb7591),
+    [`f8926164c`](https://github.com/openweft/weft/commit/f8926164c) land
+    the wire. The **agent** still launches a single weft-driver-`<kind>`
+    subprocess per host, so a `host` block declaring both `driver "vz"`
+    and `driver "qemu"` is honoured by Validate but only the first
+    matching driver is actually started today. Multi-plugin lifecycle
+    is the follow-on milestone — a tracking issue lives on
+    [weft#issues](https://github.com/openweft/weft/issues).
 
 The non-native runs are slow (TCG cost — see the warning above), but
 parallel on the same host they're still much cheaper than spinning up

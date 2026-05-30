@@ -1,4 +1,4 @@
-baseURL = 'https://openweft.github.io/'
+baseURL = 'https://openweft.github.io/pages/'
 locale  = 'en-us'
 title   = 'Weft'
 # No theme — layouts live in ./layouts

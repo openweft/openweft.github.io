@@ -72,14 +72,23 @@ disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
     name = "weft"
     url  = "https://github.com/openweft/weft"
   [[params.footerColumns.links]]
-    name = "weft-proto"
-    url  = "https://github.com/openweft/weft-proto"
-  [[params.footerColumns.links]]
-    name = "weft-drivers"
-    url  = "https://github.com/openweft/weft-drivers"
+    name = "weft-webui"
+    url  = "https://github.com/openweft/weft-webui"
   [[params.footerColumns.links]]
     name = "weft-microvm-init"
     url  = "https://github.com/openweft/weft-microvm-init"
+  [[params.footerColumns.links]]
+    name = "weft-microvm-agent"
+    url  = "https://github.com/openweft/weft-microvm-agent"
+  [[params.footerColumns.links]]
+    name = "weft-driver-plugin"
+    url  = "https://github.com/openweft/weft-driver-plugin"
+  [[params.footerColumns.links]]
+    name = "weft-driver-vz"
+    url  = "https://github.com/openweft/weft-driver-vz"
+  [[params.footerColumns.links]]
+    name = "weft-driver-qemu"
+    url  = "https://github.com/openweft/weft-driver-qemu"
 
 [[params.footerColumns]]
   title = "Community"

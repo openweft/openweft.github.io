@@ -8,12 +8,20 @@ scrapers).
 
 ## What to upload where
 
-| Surface (GitHub)                                       | File                                                  | Why                                                                                          |
-| ------------------------------------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **Org avatar** (`openweft` / org Settings)              | `png/weft-lockup-vertical-512.png`                    | Vertical lockup — readable when shrunk to GitHub's 60 px chip ; displayed up to 460 px.       |
-| **Repo Social Preview** (each repo, Settings → Social)  | `png/weft-social-preview.png` (1280×640)              | Matches GitHub's spec exactly ; X / Slack / Mastodon scrapers surface this thumbnail.        |
-| **README header banner**                                | `png/weft-wordmark-h-2048.png`                        | High-res so retina laptops don't see fuzzy edges ; constrain via `<img width="…">` in MD.   |
-| **README thumbnail / favicon-equivalent**               | `png/weft-A-weave-256.png` or `weft-A-mono-256.png`   | Square mark only ; `mono` for dark-mode contexts, `weave` for the full two-colour brand.    |
+Every PNG comes in two flavours — transparent (default) + white
+background (`-white` suffix). GitHub's upload surfaces look better
+with the white variants : avatar + Social Preview render against a
+neutral chrome that's grey-ish on dark mode and white on light mode ;
+transparent edges fringe at the chip boundary on dark mode. The
+transparent variants are for surfaces that paint their own background
+(README badges, embeds, custom OG cards).
+
+| Surface (GitHub)                                       | File                                                       | Why                                                                                          |
+| ------------------------------------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Org avatar** (`openweft` / org Settings)              | `png/weft-lockup-vertical-512-white.png`                   | Vertical lockup, white bg — readable when shrunk to GitHub's 60 px chip ; displayed up to 460 px. |
+| **Repo Social Preview** (each repo, Settings → Social)  | `png/weft-social-preview.png` (1280×640, white baked in)   | Matches GitHub's spec exactly ; X / Slack / Mastodon scrapers surface this thumbnail.        |
+| **README header banner**                                | `png/weft-wordmark-h-2048.png` (transparent)               | High-res so retina laptops don't see fuzzy edges ; constrain via `<img width="…">` in MD. Use the `-white` variant if your README itself uses a dark backdrop. |
+| **README thumbnail / favicon-equivalent**               | `png/weft-A-weave-256.png` (transparent)                   | Square mark only ; `mono` for ink-heavy contexts, `weave` for the full two-colour brand.    |
 
 ## Regenerating
 

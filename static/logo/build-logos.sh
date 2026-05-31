@@ -32,21 +32,27 @@ pick() {
 
 # Rasterisation à taille définie. $1 = SVG source ; $2 = largeur cible ;
 # $3 = hauteur cible (vide = proportionnel au viewBox) ; $4 = PNG sortie.
+# $5 (optionnel) = background color CSS — vide / "none" = transparent ;
+# "white" / "#ffffff" pour le fond blanc des surfaces GitHub.
 if RSVG=$(pick rsvg-convert); then
   RENDER() {
-    local src=$1 w=$2 h=$3 dst=$4
-    if [ -n "$h" ]; then "$RSVG" -w "$w" -h "$h" -o "$dst" "$src"
-    else                 "$RSVG" -w "$w"          -o "$dst" "$src"
-    fi
+    local src=$1 w=$2 h=$3 dst=$4 bg=${5:-}
+    local args=(-w "$w")
+    [ -n "$h" ] && args+=(-h "$h")
+    [ -n "$bg" ] && args+=(--background-color "$bg")
+    args+=(-o "$dst" "$src")
+    "$RSVG" "${args[@]}"
   }
 elif MAG=$(pick magick convert); then
   RENDER() {
-    local src=$1 w=$2 h=$3 dst=$4
+    local src=$1 w=$2 h=$3 dst=$4 bg=${5:-}
     local size=$w
     [ -n "$h" ] && size="${w}x${h}"
+    local mbg="none"
+    [ -n "$bg" ] && mbg="$bg"
     # -resize must follow the source argument, not precede it ;
     # magick's CLI grammar is "operand then operator".
-    "$MAG" -background none -density 384 "$src" -resize "$size" "$dst"
+    "$MAG" -background "$mbg" -density 384 "$src" -resize "$size" -flatten "$dst"
   }
 else
   echo "build-logos.sh : aucun rasterizer trouvé." >&2
@@ -55,28 +61,43 @@ else
   exit 1
 fi
 
-# Carrés : weft-A-* (256×256 viewBox natif).
+# RENDER_BOTH génère deux PNG : transparent + fond blanc. Les surfaces
+# GitHub (upload avatar, social preview) préfèrent le fond blanc pour
+# rendre lisible aussi bien en mode clair qu'en mode sombre — la
+# version transparente reste utile pour les contextes où le composant
+# pose son propre fond (badges, embeds).
+RENDER_BOTH() {
+  local src=$1 w=$2 h=$3 dst=$4
+  RENDER "$src" "$w" "$h" "$dst"
+  # weft-<base>-WxH.png  →  weft-<base>-WxH-white.png
+  local white="${dst%.png}-white.png"
+  RENDER "$src" "$w" "$h" "$white" white
+}
+
+# Carrés : weft-A-* (256×256 viewBox natif). Chaque taille a une
+# variante transparente ET une variante fond blanc — les surfaces
+# GitHub upload (avatar, social preview) veulent du blanc, les
+# composants UI qui posent leur propre fond préfèrent le transparent.
 for src in weft-A-mono.svg weft-A-weave.svg; do
   base=${src%.svg}
-  echo "raster: png/${base}-256.png" ;  RENDER "$src" 256  "" "png/${base}-256.png"
-  echo "raster: png/${base}-512.png" ;  RENDER "$src" 512  "" "png/${base}-512.png"
-  echo "raster: png/${base}-1024.png" ; RENDER "$src" 1024 "" "png/${base}-1024.png"
+  for size in 256 512 1024; do
+    echo "raster: png/${base}-${size}.png"
+    RENDER_BOTH "$src" "$size" "" "png/${base}-${size}.png"
+  done
 done
 
 # Wordmark horizontal : viewBox 480×128, ratio 15:4. Bandeau README.
-echo "raster: png/weft-wordmark-h-512.png"
-RENDER weft-wordmark-h.svg 512  "" png/weft-wordmark-h-512.png
-echo "raster: png/weft-wordmark-h-1024.png"
-RENDER weft-wordmark-h.svg 1024 "" png/weft-wordmark-h-1024.png
-echo "raster: png/weft-wordmark-h-2048.png"
-RENDER weft-wordmark-h.svg 2048 "" png/weft-wordmark-h-2048.png
+for size in 512 1024 2048; do
+  echo "raster: png/weft-wordmark-h-${size}.png"
+  RENDER_BOTH weft-wordmark-h.svg "$size" "" "png/weft-wordmark-h-${size}.png"
+done
 
 # Lockup vertical : viewBox 480×360. Bon pour l'avatar org GitHub
 # (qui aime du carré-ish, 460×460 affiché). Garde le ratio source.
-echo "raster: png/weft-lockup-vertical-512.png"
-RENDER weft-lockup-vertical.svg 512  "" png/weft-lockup-vertical-512.png
-echo "raster: png/weft-lockup-vertical-1024.png"
-RENDER weft-lockup-vertical.svg 1024 "" png/weft-lockup-vertical-1024.png
+for size in 512 1024; do
+  echo "raster: png/weft-lockup-vertical-${size}.png"
+  RENDER_BOTH weft-lockup-vertical.svg "$size" "" "png/weft-lockup-vertical-${size}.png"
+done
 
 # Social preview card 1280×640. GitHub Social Preview spec — uploaded
 # as-is via Settings → Social preview on each repo. Sourced from a

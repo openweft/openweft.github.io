@@ -10,10 +10,11 @@ disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
   description = "Weft is an open, Go-native, multi-hypervisor, multi-tenant, multi-AZ cloud platform. One binary, server or client, like the HashiCorp tools."
   brand       = "Weft"
   github      = "openweft"
-  heroEyebrow = "Open · Go-native · Multi-tenant"
-  heroAccent  = "Weft"
+  heroEyebrow = "Open · Go-native · Multi-tenant · Secure"
+  # heroAccent / statusBadge ne sont plus rendus dans le hero — la marque
+  # vit dans la nav + favicon, et la tagline porte visuellement le hero.
+  # Le H1 sémantique (sr-only) reprend .Site.Title + .Site.Params.description.
   heroTagline = "Without the weft, the warp is just parallel threads."
-  statusBadge = "Early development"
 
   # Hero intro paragraphs. Two-line array → two <p> blocks in
   # the layout. Markdown not needed — these are inline HTML

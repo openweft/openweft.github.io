@@ -15,10 +15,10 @@
   </video>
   <div class="container">
     {{ with .Site.Params.heroEyebrow }}<div class="eyebrow">{{ . }}</div>{{ end }}
-    <h1>
-      <span class="accent">{{ .Site.Params.heroAccent }}</span>
-      {{- with .Site.Params.statusBadge }}<span class="status">{{ . }}</span>{{ end -}}
-    </h1>
+    {{/* H1 invisible : la marque vit déjà dans la nav et la tagline porte
+         visuellement le hero. On garde un H1 sémantique pour les lecteurs
+         d'écran et l'indexation — sinon la page n'a pas de titre de niveau 1. */}}
+    <h1 class="sr-only">{{ .Site.Title }} — {{ .Site.Params.description }}</h1>
     {{ with .Site.Params.heroTagline }}<p class="tag">{{ . }}</p>{{ end }}
     <div class="intro">
       {{ range .Site.Params.heroIntro }}<p>{{ . | safeHTML }}</p>{{ end }}
@@ -239,13 +239,18 @@ $ weft --servers _weft._tcp.weft.internal vm list</code></pre>
     <h2>Flavors, volumes &amp; shares</h2>
     <p>
       Three primitives, deliberately separate. A <strong>flavor</strong> is the compute envelope — vCPU,
-      RAM, an optional cap on ephemeral scratch. A <strong>volume</strong> is single-attach block storage.
-      A <strong>share</strong> is a <a href="https://www.cncf.io/projects/cubefs/">CubeFS</a>-backed POSIX
-      filesystem that many microVMs mount at once (read-write-many). Keeping them decoupled is what lets a
-      flavor stay reusable across very different workloads.
+      RAM, optional <strong>GPU(s)</strong>, and an optional cap on ephemeral scratch. A <strong>volume</strong>
+      is single-attach block storage. A <strong>share</strong> is a
+      <a href="https://www.cncf.io/projects/cubefs/">CubeFS</a>-backed POSIX filesystem that many microVMs
+      mount at once (read-write-many). Keeping them decoupled is what lets a flavor stay reusable across
+      very different workloads.
     </p>
-    <pre><code># Flavor — compute envelope (vCPU, RAM, optional ephemeral scratch)
-$ weft flavor set small --vcpu 2 --ram 4Gi --ephemeral 8Gi
+    <pre><code># Flavor — compute envelope (vCPU, RAM, optional GPUs, optional ephemeral scratch)
+$ weft flavor set small  --vcpu 2  --ram 4Gi  --ephemeral 8Gi
+
+# GPU flavors — declared by model and count, scheduler matches free hardware
+$ weft flavor set ai-h200 --vcpu 32 --ram 256Gi --gpu 1 --gpu-type nvidia-h200          --ephemeral 400Gi
+$ weft flavor set ws-rtx6 --vcpu 16 --ram 96Gi  --gpu 1 --gpu-type nvidia-rtx-6000-ada  --ephemeral 200Gi
 
 # Volume — single-attach block storage : host device passthrough, or a file image
 $ weft volume create pg-data --type block --source /dev/nvme1n1 --project team-alpha
@@ -256,9 +261,11 @@ $ weft volume create pg-data --type block --source /dev/nvme1n1 --project team-a
 
 # Boot a microVM from an OCI image ; the dashboard / API wires
 # the flavor + volume + share into the run request.
-$ weft microvm run postgres:16 --project team-alpha</code></pre>
+$ weft microvm run postgres:16 --project team-alpha
+$ weft microvm run vllm/vllm-openai:latest --flavor ai-h200 --project team-alpha</code></pre>
     <ul class="features">
       <li><strong>No root disk to size</strong> — the rootfs is the OCI image itself (<code>weft-microvm-init</code> pivot-roots it over virtio-fs) plus a thin writable layer. So a flavor only caps the <em>ephemeral scratch</em> ; there is no persistent root volume to provision.</li>
+      <li><strong>GPU as a flavor dimension</strong> — flavors can declare one or more GPUs by model (<code>--gpu 2 --gpu-type nvidia-h200</code>). The scheduler treats them like vCPU/RAM : it picks a host with that many matching cards free, then the hypervisor driver binds them at start time — <strong>VFIO PCI passthrough</strong> on the QEMU/KVM driver. NVIDIA <strong>MIG slices</strong> on the datacenter SKUs (H200, …) surface as just another GPU type from the scheduler's point of view ; workstation cards like the <strong>RTX 6000 Ada</strong> don't expose MIG, so the flavor consumes a whole device. The Apple-VZ driver doesn't expose discrete GPUs to guests, so GPU flavors are intentionally <em>host-feature-gated</em> ; scheduling them on a VZ-only host fails the placement up front rather than at boot.</li>
       <li><strong>Volume — single-attach block (RWO)</strong> — sized or sourced at creation and bound to one microVM, the way an instance type and a block volume are separate in the public clouds. <code>block</code> passes a host device (NVMe / partition) straight through ; <code>file</code> is a host-side image. Both surface as virtio-blk via the <code>weft</code> Volume driver.</li>
       <li><strong>Share — multi-attach POSIX (RWX)</strong> — a CubeFS filesystem mounted concurrently by many microVMs, the way EFS or Filestore work : ideal for JupyterHub notebooks over a common dataset, or any fan-out of workers on shared data. The same bytes are reachable as objects through CubeFS's S3 endpoint.</li>
       <li><strong>Storage workloads, illustrated</strong> — a CubeFS DataNode is a modest flavor plus a large pass-through block volume ; a MetaNode is a RAM-heavy flavor with almost no disk. Same primitives, different mix.</li>

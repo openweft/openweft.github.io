@@ -7,10 +7,17 @@ title   = 'Weft'
 disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
 
 [params]
-  description = "Weft is an open, Go-native, multi-hypervisor, multi-tenant, multi-AZ cloud platform. One binary, server or client, like the HashiCorp tools."
+  # Consommée par : H1 sr-only ("Weft — {description}"), meta description
+  # SEO, et le paragraphe descriptif du footer — sans le "Weft is an"
+  # initial qui faisait doublon avec .Site.Title dans le H1.
+  description = "Open, Go-native, secure, multi-hypervisor, multi-tenant, multi-AZ cloud platform. One binary, server or client, like the HashiCorp tools."
   brand       = "Weft"
   github      = "openweft"
-  heroEyebrow = "Open · Go-native · Multi-tenant · Secure"
+  # heroEyebrow retiré — la même info ("Open, Go-native, multi-tenant…")
+  # est portée par .description (H1 sr-only + meta + footer), donc afficher
+  # une eyebrow par-dessus faisait redite visuelle. Laisser vide → la
+  # branche {{ with }} du template ne rend rien.
+  heroEyebrow = ""
   # heroAccent / statusBadge ne sont plus rendus dans le hero — la marque
   # vit dans la nav + favicon, et la tagline porte visuellement le hero.
   # Le H1 sémantique (sr-only) reprend .Site.Title + .Site.Params.description.

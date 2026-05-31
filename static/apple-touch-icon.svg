@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="Weft">
+  <title>Weft — Apple touch icon</title>
+  <!--
+    Apple touch icon : 180×180 nominal, mark dans une "safe area" de
+    ~80 % (HIG : éviter que iOS rogne le mark quand il applique son
+    masque arrondi). Fond solide bleu primaire pour que l'icône sorte
+    du springboard sans être confondue avec d'autres apps "navy".
+  -->
+  <rect width="180" height="180" fill="#2563eb" rx="36" ry="36"/>
+  <g transform="translate(18,18) scale(0.5625)" fill="none" stroke-linecap="round">
+    <!-- mark inversé : navy → blanc (pour passer sur le bleu primaire) ; trame → blanc aussi mais avec un poids fort -->
+    <line x1="68"  y1="40" x2="68"  y2="216" stroke="#ffffff" stroke-width="22"/>
+    <line x1="188" y1="40" x2="188" y2="216" stroke="#ffffff" stroke-width="22"/>
+    <line x1="36"  y1="128" x2="220" y2="128" stroke="#ccd6ec" stroke-width="22"/>
+    <line x1="128" y1="40" x2="128" y2="216" stroke="#ffffff" stroke-width="22"/>
+  </g>
+</svg>

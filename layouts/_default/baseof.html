@@ -7,17 +7,35 @@
   <meta name="description" content="{{ .Site.Params.description }}">
   <meta name="generator" content="Hugo">
   {{/* Apply the saved theme before first paint to avoid a flash.
-       Light is the default ; dark is opt-in and persisted. */}}
+       Light is the default ; dark is opt-in and persisted.
+       Also opt into scroll-driven reveal animations when (a) JS runs,
+       (b) IntersectionObserver exists, et (c) l'utilisateur n'a pas
+       activé prefers-reduced-motion. Posé AVANT la CSS pour que les
+       sections soient cachées dès le premier paint — sinon flash. */}}
   <script>
     (function () {
+      var root = document.documentElement;
       try {
         if (localStorage.getItem('weft-theme') === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
+          root.setAttribute('data-theme', 'dark');
         }
       } catch (e) {}
+      if ('IntersectionObserver' in window &&
+          !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        root.setAttribute('data-anim', 'on');
+      }
     })();
   </script>
   <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
+
+  {{/* Icônes — tout-SVG (Chrome/Safari/Firefox/Edge supportent
+       image/svg+xml en favicon; iOS Safari 16+ supporte apple-touch
+       SVG). Raster .ico/.png à générer via static/logo/build-raster.sh
+       quand on aura besoin de couvrir iOS <16 / vieux user-agents. */}}
+  <link rel="icon" type="image/svg+xml" href="{{ "favicon.svg" | relURL }}">
+  <link rel="apple-touch-icon" href="{{ "apple-touch-icon.svg" | relURL }}">
+  <link rel="manifest" href="{{ "site.webmanifest" | relURL }}">
+  <meta name="theme-color" content="#2563eb">
 </head>
 <body>
   {{ partial "nav.html" . }}
@@ -44,6 +62,34 @@
             localStorage.setItem('weft-theme', 'dark');
           }
         } catch (e) {}
+      });
+    })();
+  </script>
+
+  {{/* Scroll-driven reveal. data-anim="on" est posé par le script du
+       <head> uniquement quand IntersectionObserver est dispo ET que
+       l'utilisateur tolère le mouvement — sinon ce script tourne à
+       vide et la CSS laisse tout visible (graceful degradation). */}}
+  <script>
+    (function () {
+      if (document.documentElement.getAttribute('data-anim') !== 'on') return;
+      // Stagger les enfants des groupes (cards / features) pour qu'ils
+      // apparaissent en cascade plutôt qu'en bloc à l'in-view du parent.
+      document.querySelectorAll('.grid, .features').forEach(function (group) {
+        Array.prototype.forEach.call(group.children, function (el, i) {
+          el.style.transitionDelay = (i * 0.06) + 's';
+        });
+      });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
+      document.querySelectorAll('main > .container > section').forEach(function (el) {
+        io.observe(el);
       });
     })();
   </script>

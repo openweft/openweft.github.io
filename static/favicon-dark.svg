@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Weft">
+  <title>Weft — dark-theme variant</title>
+  <!--
+    Variante thème sombre : pastille blanche aux coins légèrement
+    arrondis (rx=32 ≈ 12,5 % du côté), avec le mark A original (2-tons)
+    posé dessus. Sur fond navy de la nav/footer en dark, la pastille
+    crée un disque de lecture clair pour le mark — sans elle, les fils
+    navy #172445 se confondent quasi parfaitement avec le bg #1a2545.
+  -->
+  <rect width="256" height="256" rx="32" ry="32" fill="#ffffff"/>
+  <g fill="none" stroke-linecap="round">
+    <line x1="68"  y1="40" x2="68"  y2="216" stroke="#172445" stroke-width="22"/>
+    <line x1="188" y1="40" x2="188" y2="216" stroke="#172445" stroke-width="22"/>
+    <line x1="36"  y1="128" x2="220" y2="128" stroke="#2563eb" stroke-width="22"/>
+    <line x1="128" y1="40" x2="128" y2="216" stroke="#172445" stroke-width="22"/>
+  </g>
+</svg>

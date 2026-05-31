@@ -1,5 +1,18 @@
 {{ define "main" }}
 <section class="hero">
+  {{/* Vidéo de fond en boucle muette. preload="metadata" pour éviter
+       de tirer le fichier complet avant la décision autoplay du
+       navigateur ; le poster + le background-image de .hero partagent
+       la même JPG, donc l'utilisateur voit l'image instantanément
+       (first paint) puis la vidéo prend la main quand elle est prête
+       à jouer. aria-hidden : purement décoratif. */}}
+  <video class="hero-video"
+         autoplay muted loop playsinline
+         preload="metadata"
+         poster="{{ "img/hero-datacenter.jpg" | relURL }}"
+         aria-hidden="true">
+    <source src="{{ "img/hero-datacenter.mp4" | relURL }}" type="video/mp4">
+  </video>
   <div class="container">
     {{ with .Site.Params.heroEyebrow }}<div class="eyebrow">{{ . }}</div>{{ end }}
     <h1>

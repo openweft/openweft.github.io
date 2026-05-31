@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Weft logo A — monochrome">
+  <title>Weft logo A — monochrome (single ink)</title>
+  <!--
+    Variante monochrome de la direction A. Dans le 2-tons original,
+    l'illusion "dessus/dessous" est portée par le contraste navy vs bleu :
+    en monochrome ce signal disparaît, donc le tressage doit être lisible
+    par la géométrie seule. La trame est ici dessinée en DEUX segments
+    courts qui évitent la chaîne centrale — l'oeil reconstitue le fil
+    qui passe DERRIÈRE la chaîne centrale, et DEVANT les deux extérieurs.
+    Le brin central est volontairement tracé en dernier pour mordre
+    visuellement par-dessus la trame (au-cas-où via du sub-pixel rendering).
+
+    À utiliser sur fond contrasté uniquement (impression mono,
+    embroidery, watermark, badge GitHub README).
+    currentColor permet de teinter via CSS : `svg { color: #fff; }`.
+  -->
+  <g fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round">
+    <line x1="68"  y1="40" x2="68"  y2="216"/>
+    <line x1="188" y1="40" x2="188" y2="216"/>
+    <!-- trame coupée en deux : 36→117 (devant warp1), puis 139→220 (devant warp3) ; la zone autour de la chaîne centrale (x=128 ± 11) reste vide -->
+    <line x1="36"  y1="128" x2="117" y2="128"/>
+    <line x1="139" y1="128" x2="220" y2="128"/>
+    <line x1="128" y1="40" x2="128" y2="216"/>
+  </g>
+</svg>

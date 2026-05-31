@@ -1,0 +1,8 @@
+/* Logo : pastille blanche en thème sombre (Slate palette).
+   MkDocs Material rend le logo dans la header via .md-header__button.md-logo
+   contenant <img alt="logo" src="..."> ; on swap la source via content:url()
+   sans toucher au template. */
+[data-md-color-scheme="slate"] .md-header__button.md-logo img,
+[data-md-color-scheme="slate"] .md-nav__title img {
+  content: url("../assets/logo-dark.svg");
+}

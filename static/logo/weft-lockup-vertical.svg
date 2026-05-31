@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-label="Weft — a modern Go-native cloud platform">
+  <title>Weft — vertical lockup with tagline</title>
+  <!--
+    Lockup vertical pour le hero de la landing : icône centrée en haut,
+    wordmark dessous, tagline (gris navy) sous le wordmark. Espaces
+    généreux : safe-area autour du mark pour résister à un crop carré
+    de bandeau.
+  -->
+  <!-- Icône centrée, 160×160 -->
+  <g transform="translate(160,16) scale(0.625)">
+    <line x1="68"  y1="40" x2="68"  y2="216" stroke="#172445" stroke-width="22" stroke-linecap="round"/>
+    <line x1="188" y1="40" x2="188" y2="216" stroke="#172445" stroke-width="22" stroke-linecap="round"/>
+    <line x1="36"  y1="128" x2="220" y2="128" stroke="#2563eb" stroke-width="22" stroke-linecap="round"/>
+    <line x1="128" y1="40" x2="128" y2="216" stroke="#172445" stroke-width="22" stroke-linecap="round"/>
+  </g>
+  <!-- Wordmark, centré horizontalement -->
+  <text x="240" y="260" text-anchor="middle"
+        font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="80" font-weight="700" letter-spacing="-2"
+        fill="#172445">Weft</text>
+  <!-- Tagline — utile sur le hero, pas en favicon. Couleur secondaire pour la hiérarchie. -->
+  <text x="240" y="304" text-anchor="middle"
+        font-family="Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="20" font-weight="500" letter-spacing="0.5"
+        fill="#43548a">a modern Go-native cloud platform</text>
+</svg>

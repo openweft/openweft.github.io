@@ -35,6 +35,9 @@ theme:
   # Source canonique : openweft.github.io/static/logo/weft-A-weave.svg.
   logo: assets/logo.svg
   favicon: assets/favicon.svg
+  # Le logo "claire" est servi par défaut ; en palette Slate (dark),
+  # extra_css/extra.css swap le src vers logo-dark.svg (pastille blanche)
+  # via content:url(). Le favicon reste le même dans les deux modes.
   palette:
     # Auto light/dark via prefers-color-scheme ; explicit toggle too.
     - media: "(prefers-color-scheme)"
@@ -124,6 +127,11 @@ nav:
       - api/index.md
   - Contributing:
       - Coding conventions: contributing/coding-conventions.md
+
+extra_css:
+  # Swap logo (pastille blanche) en palette dark (Slate). Voir extra.css
+  # pour le détail — sans ça, le mark navy se confond avec le header dark.
+  - stylesheets/extra.css
 
 extra:
   social:

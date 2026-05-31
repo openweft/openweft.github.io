@@ -2,92 +2,133 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Weft — explorations logo</title>
+  <title>Weft — brand kit</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <style>
     :root { color-scheme: light dark; }
     body  { font: 14px/1.5 -apple-system, ui-sans-serif, system-ui, sans-serif;
-            margin: 32px; max-width: 980px; }
+            margin: 32px; max-width: 1100px; color: #172445; }
     h1    { font-size: 22px; margin: 0 0 4px; }
-    h2    { font-size: 16px; margin: 28px 0 8px; }
-    p     { margin: 6px 0 16px; color: #4a5a78; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid #e3e8f0;
-             vertical-align: middle; }
-    th    { font-weight: 600; color: #2a3a5e; background: #f4f6fc; }
-    .size16  img { width: 16px;  height: 16px; }
-    .size64  img { width: 64px;  height: 64px; }
+    h2    { font-size: 16px; margin: 32px 0 10px; }
+    h3    { font-size: 13px; margin: 18px 0 6px; text-transform: uppercase;
+            letter-spacing: 0.6px; color: #5b6da3; }
+    p     { margin: 6px 0 16px; color: #4a5a78; max-width: 760px; }
+    code  { background: #eef1f8; padding: 1px 5px; border-radius: 3px; font-size: 12.5px; }
+    .grid { display: grid; gap: 16px; }
+    .row  { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .card { background: #f4f6fc; border: 1px solid #e3e8f0; border-radius: 8px;
+            padding: 18px; display: inline-flex; align-items: center;
+            justify-content: center; min-height: 80px; }
+    .card.dark { background: #172445; }
+    .card.print { background: #fff; border-color: #c2c8d6; }
+    .size16  img { width: 16px; height: 16px; }
+    .size32  img { width: 32px; height: 32px; }
+    .size64  img { width: 64px; height: 64px; }
+    .size128 img { width: 128px; height: 128px; }
     .size256 img { width: 256px; height: 256px; }
-    .swatch  img { background: #ccd6ec; padding: 8px; border-radius: 8px; }
-    .swatch-dark img { background: #172445; padding: 8px; border-radius: 8px; }
-    .name { font-weight: 600; color: #172445; }
-    .rationale { font-size: 12px; color: #5b6da3; max-width: 320px; }
-    .rec  { background: #eef3ff; border-left: 4px solid #2563eb;
-            padding: 12px 16px; border-radius: 4px; margin: 12px 0 24px; }
+    .wmark   img { height: 64px; }
+    .wmark-big img { height: 96px; }
+    .lockup  img { height: 220px; }
+    .ctx-tab { display: flex; align-items: center; gap: 10px;
+               background: #fff; border: 1px solid #d4dae8; border-radius: 8px 8px 0 0;
+               padding: 8px 14px; font-size: 12px; color: #43548a; }
+    .ctx-tab img { width: 16px; height: 16px; }
+    .ctx-content { background: #fff; border: 1px solid #d4dae8; border-top: 0;
+                   border-radius: 0 0 8px 8px; padding: 18px;
+                   color: #43548a; font-size: 12px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #e3e8f0; }
+    th { background: #f4f6fc; font-weight: 600; }
+    .swatch { display: inline-block; width: 18px; height: 18px; border-radius: 3px;
+              vertical-align: middle; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
-  <h1>Weft — explorations logo</h1>
-  <p>Trois directions distinctes. Chaque ligne est le même SVG rendu à 16 px (favicon), 64 px (icône d'application) et 256 px (grand format) — sur fond clair puis sur fond navy, pour vérifier que le mark tient sur les deux thèmes.</p>
+  <h1>Weft — brand kit (direction A retenue)</h1>
+  <p>Tous les fichiers vivent sous <code>static/</code>. Le favicon et le manifest sont déjà câblés dans <code>layouts/_default/baseof.html</code> ; tout charge en SVG natif. Si tu as besoin de PNG/ICO en fallback pour iOS &lt;16 ou scrapers, exécute <code>static/logo/build-raster.sh</code>.</p>
 
-  <div class="rec">
-    <strong>Recommandation : direction A — trame sur chaîne.</strong> Lecture la plus directe du nom <em>weft</em> (la trame est <em>littéralement</em> le fil horizontal du tissage), géométrie pure qui reste lisible à 16 px en favicon, et zéro ambiguïté de marque avec d'autres projets cloud / VM. B est un letter-mark plus conventionnel ; C est plus dynamique mais perd la lecture "tissage" sous 32 px.
+  <h2>1 · Mark — l'icône seule</h2>
+  <p>L'unité de base : favicon, app icon, badge GitHub, sticker. Trois fils de chaîne navy + un fil de trame bleu qui passe dessus / dessous / dessus.</p>
+  <div class="row">
+    <div class="card size16"><img src="weft-A-weave.svg" alt=""></div>
+    <div class="card size32"><img src="weft-A-weave.svg" alt=""></div>
+    <div class="card size64"><img src="weft-A-weave.svg" alt=""></div>
+    <div class="card size128"><img src="weft-A-weave.svg" alt=""></div>
+    <div class="card size256"><img src="weft-A-weave.svg" alt=""></div>
+  </div>
+  <h3>Sur fond navy</h3>
+  <div class="row">
+    <div class="card dark size64"><img src="weft-A-weave.svg" alt=""></div>
+    <div class="card dark size128"><img src="weft-A-weave.svg" alt=""></div>
+    <div class="card dark size256"><img src="weft-A-weave.svg" alt=""></div>
   </div>
 
-  <h2>Comparaison côte-à-côte</h2>
+  <h2>2 · Wordmark horizontal</h2>
+  <p>Lockup pour la nav, le footer, les signatures, les README. Icône + texte « Weft », alignement par ligne de base.</p>
+  <div class="row">
+    <div class="card wmark"><img src="weft-wordmark-h.svg" alt="Weft"></div>
+    <div class="card wmark-big"><img src="weft-wordmark-h.svg" alt="Weft"></div>
+  </div>
+
+  <h2>3 · Lockup vertical (hero landing)</h2>
+  <p>Pour le hero <code>index.html</code> de la landing — icône large centrée, wordmark, tagline en couleur secondaire.</p>
+  <div class="row">
+    <div class="card lockup"><img src="weft-lockup-vertical.svg" alt="Weft — a modern Go-native cloud platform"></div>
+  </div>
+
+  <h2>4 · Variante monochrome</h2>
+  <p>Une seule encre, trame coupée en deux segments pour que le tressage reste lisible géométriquement (sans s'appuyer sur le contraste bleu/navy). Pour impression, embroidery, watermarks, badges README mono. La couleur vient de <code>currentColor</code> — pilote-la via CSS.</p>
+  <div class="row">
+    <div class="card print size64" style="color:#172445"><img src="weft-A-mono.svg" alt=""></div>
+    <div class="card print size128" style="color:#172445"><img src="weft-A-mono.svg" alt=""></div>
+    <div class="card dark size128" style="color:#ffffff"><img src="weft-A-mono.svg" alt=""></div>
+    <div class="card size128" style="background:#2563eb;color:#ffffff"><img src="weft-A-mono.svg" alt=""></div>
+  </div>
+
+  <h2>5 · Favicon en contexte</h2>
+  <p>Simulation d'un onglet de navigateur. Le favicon ci-dessus, dans la barre de titre de cette page, est rendu en temps réel par ton navigateur — c'est <code>../favicon.svg</code>.</p>
+  <div style="max-width:420px">
+    <div class="ctx-tab"><img src="../favicon.svg" alt=""> Weft — a modern Go-native cloud platform</div>
+    <div class="ctx-content">aperçu d'onglet navigateur — le favicon SVG s'affiche tel quel sur Chrome, Firefox, Safari, Edge.</div>
+  </div>
+
+  <h2>6 · Apple touch icon</h2>
+  <p>Mark inversé sur fond bleu primaire, coins arrondis (rx=36 ≈ 20% du côté, dans la safe area des HIG iOS). Servira si quelqu'un ajoute le site à l'écran d'accueil iOS.</p>
+  <div class="row">
+    <div class="card" style="padding:24px"><img src="../apple-touch-icon.svg" alt="" style="width:120px;height:120px"></div>
+  </div>
+
+  <h2>Palette</h2>
   <table>
-    <thead>
-      <tr>
-        <th>Direction</th>
-        <th>16 px</th>
-        <th>64 px</th>
-        <th>256 px (clair)</th>
-        <th>256 px (navy)</th>
-      </tr>
-    </thead>
+    <thead><tr><th>Rôle</th><th>Hex</th><th>Usage</th></tr></thead>
     <tbody>
-      <tr>
-        <td>
-          <div class="name">A — Trame sur chaîne</div>
-          <div class="rationale">3 fils de chaîne (warp) + 1 fil de trame (weft) tissé dessus/dessous/dessus. Le plus littéral, le plus lisible aux petites tailles.</div>
-        </td>
-        <td class="size16"><img src="weft-A-weave.svg" alt=""></td>
-        <td class="size64"><img src="weft-A-weave.svg" alt=""></td>
-        <td class="size256 swatch"><img src="weft-A-weave.svg" alt=""></td>
-        <td class="size256 swatch-dark"><img src="weft-A-weave.svg" alt=""></td>
-      </tr>
-      <tr>
-        <td>
-          <div class="name">B — W entrelacé</div>
-          <div class="rationale">La lettre W tracée par deux brins qui se croisent ; le tressage est caché dans la forme. Letter-mark coherent avec le wordmark "Weft".</div>
-        </td>
-        <td class="size16"><img src="weft-B-woven-w.svg" alt=""></td>
-        <td class="size64"><img src="weft-B-woven-w.svg" alt=""></td>
-        <td class="size256 swatch"><img src="weft-B-woven-w.svg" alt=""></td>
-        <td class="size256 swatch-dark"><img src="weft-B-woven-w.svg" alt=""></td>
-      </tr>
-      <tr>
-        <td>
-          <div class="name">C — Navette</div>
-          <div class="rationale">La navette (shuttle) du métier qui dépose le fil. Plus dynamique, suggère orchestration / débit plutôt que le tissu fini. Perd en lisibilité sous 32 px.</div>
-        </td>
-        <td class="size16"><img src="weft-C-shuttle.svg" alt=""></td>
-        <td class="size64"><img src="weft-C-shuttle.svg" alt=""></td>
-        <td class="size256 swatch"><img src="weft-C-shuttle.svg" alt=""></td>
-        <td class="size256 swatch-dark"><img src="weft-C-shuttle.svg" alt=""></td>
-      </tr>
+      <tr><td><span class="swatch" style="background:#2563eb"></span>Bleu primaire</td><td><code>#2563eb</code></td><td>Le fil de trame, l'accent, les CTA primaires</td></tr>
+      <tr><td><span class="swatch" style="background:#172445"></span>Navy</td><td><code>#172445</code></td><td>Les fils de chaîne, texte du wordmark, structure</td></tr>
+      <tr><td><span class="swatch" style="background:#43548a"></span>Mid-navy</td><td><code>#43548a</code></td><td>Tagline, hiérarchie secondaire, indicateurs de mouvement</td></tr>
+      <tr><td><span class="swatch" style="background:#ccd6ec"></span>Light fog</td><td><code>#ccd6ec</code></td><td>Fond de page, manifest <code>background_color</code></td></tr>
     </tbody>
   </table>
 
-  <h2>Palette utilisée</h2>
-  <p>Reprise de <code>static/img/mesh-3d.svg</code> pour rester cohérent avec la landing actuelle.</p>
-  <ul>
-    <li><code>#2563eb</code> — bleu primaire (le fil de trame, accent)</li>
-    <li><code>#172445</code> — navy (les fils de chaîne, structure)</li>
-    <li><code>#43548a</code> — mid-navy (motion / accent secondaire)</li>
-    <li><code>#ccd6ec</code> — fond clair (la page)</li>
-  </ul>
+  <h2>Inventaire fichiers</h2>
+  <table>
+    <thead><tr><th>Chemin</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>static/favicon.svg</code></td><td>Favicon principal, tout-navigateur récent</td></tr>
+      <tr><td><code>static/apple-touch-icon.svg</code></td><td>iOS Safari 16+, écran d'accueil</td></tr>
+      <tr><td><code>static/site.webmanifest</code></td><td>PWA manifest (theme-color, icons)</td></tr>
+      <tr><td><code>static/logo/weft-A-weave.svg</code></td><td>Mark 2-tons, source canonique</td></tr>
+      <tr><td><code>static/logo/weft-A-mono.svg</code></td><td>Mark 1-encre via <code>currentColor</code></td></tr>
+      <tr><td><code>static/logo/weft-wordmark-h.svg</code></td><td>Lockup horizontal mark + « Weft »</td></tr>
+      <tr><td><code>static/logo/weft-lockup-vertical.svg</code></td><td>Lockup vertical + tagline (hero)</td></tr>
+      <tr><td><code>static/logo/build-raster.sh</code></td><td>Optionnel : génère .ico / .png pour fallback ancien</td></tr>
+    </tbody>
+  </table>
 
-  <h2>Suite</h2>
-  <p>Une fois ta direction choisie, je décline en : (1) version horizontale icône + wordmark "Weft", (2) favicon multi-tailles, (3) variante monochrome (impression / fond complexe), (4) éventuel lockup vertical pour le hero de la landing.</p>
+  <h2>Prochain coup</h2>
+  <ul>
+    <li>Outliner « Weft » du wordmark en paths SVG une fois la fonte définitive choisie (Inter aujourd'hui, on peut décider autre chose).</li>
+    <li>Câbler le lockup vertical dans le hero de <code>layouts/index.html</code> à la place du <code>mesh-3d.svg</code> actuel — ou en complément.</li>
+    <li>Pousser la version mono dans les README de chaque sous-repo openweft (badge en haut, taille 64).</li>
+  </ul>
 </body>
 </html>

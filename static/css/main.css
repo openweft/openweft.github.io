@@ -366,6 +366,27 @@ nav.topnav .cta {
   max-width: 72ch;
   color: #c5d1ee;
 }
+/* Premier paragraphe de l'intro = la pitch ("Weft is an open, Go-native
+   cloud platform — multi-hypervisor, multi-tenant, multi-AZ."). Promu
+   en lead — plus grand, plus clair — pour porter visuellement le hero
+   maintenant que le H1 visible "Weft" est parti dans la nav. Calibrée
+   pour TENIR SUR UNE LIGNE dans le container 1080 px : ~90 chars dont
+   30 en <strong> à 1.25 rem ≈ 990 px, le container utile vaut 1032 px.
+   La paragraphe suivant (explication "the weft is the thread…") garde
+   sa taille standard pour la hiérarchie. */
+.hero .intro p:first-child {
+  font-size: 1.25rem;
+  line-height: 1.4;
+  color: #eef2ff;
+  max-width: none;
+  margin-bottom: 1.4rem;
+}
+/* Sur desktop large, ferme tout doute : pas de wrap interne. En-dessous
+   de 1100 px le container rétrécit et la pitch wrappera naturellement
+   sur deux lignes — préférable à un overflow horizontal. */
+@media (min-width: 1100px) {
+  .hero .intro p:first-child { white-space: nowrap; }
+}
 .hero .intro p strong, .hero .intro p em { color: #ffffff; }
 .hero .cta-row {
   display: flex;

@@ -28,7 +28,11 @@ disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
   # strings the template emits verbatim (via the `safeHTML`
   # template func).
   heroIntro = [
-    "Weft is an <strong>open, Go-native cloud platform</strong> — multi-hypervisor, multi-tenant, multi-AZ. The name comes from weaving : the <em>weft</em> is the thread that crosses perpendicularly through the warp to form fabric, exactly what middleware does between heterogeneous hosts, networks, and storage backends.",
+    # Pitch : doit tenir sur UNE ligne dans le container 1080 px — la
+    # CSS .hero .intro p:first-child fige sa font-size pour que ça passe.
+    "Weft is an <strong>open, Go-native cloud platform</strong> — multi-hypervisor, multi-tenant, multi-AZ.",
+    # Étymologie + métaphore : paragraphe distinct, style courant.
+    "The name comes from weaving : the <em>weft</em> is the thread that crosses perpendicularly through the warp to form fabric, exactly what middleware does between heterogeneous hosts, networks, and storage backends.",
     "One binary, server or client mode, like the HashiCorp tools. Runs on a laptop. Scales to a 3-DC cluster."
   ]
 

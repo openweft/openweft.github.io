@@ -29,6 +29,12 @@ site_dir: public/docs/latest
 theme:
   name: material
   language: en
+  # Logo (mark A — trame sur chaîne) et favicon. Même SVG que la
+  # landing Hugo, copié sous docs/assets/ pour que chaque version
+  # Mike embarque son propre logo, indépendant de la landing.
+  # Source canonique : openweft.github.io/static/logo/weft-A-weave.svg.
+  logo: assets/logo.svg
+  favicon: assets/favicon.svg
   palette:
     # Auto light/dark via prefers-color-scheme ; explicit toggle too.
     - media: "(prefers-color-scheme)"
@@ -85,6 +91,10 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Getting started:
+      - Single-host bring-up: getting-started/single-host.md
+      - 3-DC bring-up: getting-started/three-dc.md
+      - microVM quickstart: getting-started/microvm-quickstart.md
   - Architecture:
       - architecture/index.md
       - Control plane: architecture/control-plane.md
@@ -94,12 +104,26 @@ nav:
       - operations/index.md
       - Bring up a cluster: operations/bring-up.md
       - Infra services: operations/infra.md
+  - Operator handbook:
+      - operator-handbook/index.md
+      - Reverse proxy: operator-handbook/proxy.md
+      - Observability: operator-handbook/observability.md
+      - Backup and restore: operator-handbook/backup-and-restore.md
+      - HA and DR: operator-handbook/ha-and-dr.md
+      - Security: operator-handbook/security.md
   - CLI:
       - cli/index.md
       - weft agent: cli/agent.md
       - weft microvm: cli/microvm.md
+  - Reference:
+      - Terraform provider: reference/terraform-provider.md
+      - CI runners: reference/runners.md
+      - CLI surface: reference/cli.md
+      - API: reference/api.md
   - API:
       - api/index.md
+  - Contributing:
+      - Coding conventions: contributing/coding-conventions.md
 
 extra:
   social:

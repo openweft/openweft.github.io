@@ -88,6 +88,76 @@ $ weft --servers _weft._tcp.weft.internal vm list</code></pre>
     </ul>
   </section>
 
+  <section id="apps">
+    <span class="section-eyebrow">Desktop &amp; mobile</span>
+    <h2>Client apps</h2>
+    <p>
+      The dashboard is a thin <strong>native shell around the same
+      <code>weft-webui</code></strong> the browser serves — one WebView, no
+      duplicated UI. On the desktop it lives as a <strong>menu-bar / system-tray
+      icon</strong> (macOS, Linux/GTK, Windows) ; on mobile it is a full-screen
+      app (Android, iOS). Click the tray icon, the dashboard opens in a window ;
+      everything you can do in the browser, you can do here.
+    </p>
+    <div class="grid app-grid">
+      <div class="card"><h4>weft-app-osx</h4><p>macOS menu-bar app. Go + <code>webview</code> (WKWebView) + a status-bar item. Ships as a notarized <code>.app</code> bundle.</p></div>
+      <div class="card"><h4>weft-app-gtk</h4><p>Linux tray app. Go + <code>webview</code> (WebKitGTK) + <code>StatusNotifierItem</code>. Ships as a Flatpak.</p></div>
+      <div class="card"><h4>weft-app-windows</h4><p>Windows notification-area app. Go + <code>webview</code> (WebView2) + a tray icon. Ships as an MSIX.</p></div>
+      <div class="card"><h4>weft-app-android</h4><p>Kotlin + <code>WebView</code>. The failover supervisor runs in a foreground service.</p></div>
+      <div class="card"><h4>weft-app-ios</h4><p>Swift + <code>WKWebView</code>. The failover supervisor runs in the app process.</p></div>
+      <div class="card"><h4>weft-app-core</h4><p>Shared Go library — the transport-aware, anti-flap <strong>HA failover supervisor</strong> the three desktop apps embed. Mobile mirrors its logic natively.</p></div>
+    </div>
+
+    <h3>Highly available by construction</h3>
+    <p>
+      A DC can go down without the operator noticing. Each app knows about
+      <strong>every DC's <code>weft-webui</code></strong> (resolved from the same
+      per-DC SRV / multi-A DNS the API uses) and keeps a live health check on
+      each. The dashboard's API client is handed the <strong>full endpoint
+      list</strong> ; calls retry against the next healthy DC the instant one
+      stops answering. Because the SPA assets are already in the WebView, a DC
+      loss only re-routes the <em>API traffic</em> — the page never reloads, so
+      the switch is <strong>invisible</strong> in the common case.
+    </p>
+    <ul class="features">
+      <li><strong>Seamless first, visible only if it must be</strong> — in-flight
+        and subsequent calls fail over silently. If <em>every</em> known DC is
+        unreachable, or a hard reload is unavoidable, a non-blocking banner says
+        <em>"Connection switched to DC-B"</em> rather than leaving a dead page.</li>
+      <li><strong>Anti-flap</strong> — the supervisor uses hysteresis : a DC must
+        pass health checks for a hold-down window before it is promoted back, so a
+        DC that is flapping up/down doesn't whipsaw the active connection.</li>
+      <li><strong>Stickiness for streams</strong> — long-lived SSE event streams
+        re-attach to the newly-active DC on failover, mirroring the
+        <code>weft events</code> reconnection behaviour.</li>
+    </ul>
+
+    <h3>No worldwide web listener</h3>
+    <p>
+      Because the dashboard reaches the cluster <em>through the app</em>, the
+      platform never has to expose <code>weft-webui</code> to the public Internet.
+      The app brings its own <strong>authenticated transport</strong> and points
+      the WebView at a private, loopback-only address ; only enrolled users and
+      devices can reach the UI at all.
+    </p>
+    <ul class="features">
+      <li><strong>WireGuard transport</strong> — the app joins the cluster
+        <a href="https://www.wireguard.com">WireGuard</a> mesh as a userspace peer
+        (<code>wireguard-go</code> netstack, no <code>tun</code> privilege) and
+        talks to each DC's <code>weft-webui</code> on its mesh address. The webui
+        listener binds the mesh interface only.</li>
+      <li><strong>SSH transport</strong> — zero-config fallback : the app opens an
+        SSH connection to a per-DC endpoint and local-forwards a loopback port to
+        the internal <code>weft-webui</code> (pure-Go <code>x/crypto/ssh</code>, no
+        VPN entitlement — ideal on mobile and locked-down networks). One forward
+        per DC means the SPA still sees a full endpoint list to fail over across.</li>
+      <li><strong>Identity, end to end</strong> — the transport key (WireGuard or
+        SSH) gates the network ; <a href="https://dexidp.io">dex</a> OIDC still gates
+        the session inside the UI. Losing a device means revoking one key, not
+        rotating a public secret.</li>
+    </ul>
+  </section>
+
   <section id="networking">
     <span class="section-eyebrow">Programmable network</span>
     <h2>Routers &amp; load balancers</h2>
@@ -211,6 +281,9 @@ $ weft microvm run postgres:16 --project team-alpha</code></pre>
       <div class="card"><h4>weft-microvm-agent</h4><p>In-guest companion daemon — applies dynamic config from NATS (WireGuard mesh, SFTP/FUSE mounts, SSH keys) and runs first-boot provisioning (git via go-git, OCI via oras-go).</p></div>
       <div class="card"><h4>weft-microvm-kernel</h4><p>Custom Linux kernel for the microVM substrate — minimal config, WireGuard built-in, 9p/virtio-fs, distributed as an OCI artifact.</p></div>
       <div class="card"><h4>terraform-provider-weft</h4><p>Terraform provider — every resource declared as HCL maps to a weft API object.</p></div>
+      <div class="card"><h4>weft-app-core</h4><p>Shared Go library for the desktop apps — transport-aware (WireGuard / SSH / direct), anti-flap multi-DC failover supervisor + WebView &amp; tray helpers.</p></div>
+      <div class="card"><h4>weft-app-{osx,gtk,windows}</h4><p>Desktop menu-bar / tray apps. Go + <code>webview</code> hosting <code>weft-webui</code> ; embed <code>weft-app-core</code> for HA failover.</p></div>
+      <div class="card"><h4>weft-app-{android,ios}</h4><p>Mobile dashboard apps. Kotlin <code>WebView</code> / Swift <code>WKWebView</code> ; mirror the failover supervisor natively.</p></div>
     </div>
   </section>
 

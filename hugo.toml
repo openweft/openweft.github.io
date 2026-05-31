@@ -91,6 +91,24 @@ disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
     url  = "https://github.com/openweft/weft-driver-qemu"
 
 [[params.footerColumns]]
+  title = "Client apps"
+  [[params.footerColumns.links]]
+    name = "weft-app-osx"
+    url  = "https://github.com/openweft/weft-app-osx"
+  [[params.footerColumns.links]]
+    name = "weft-app-gtk"
+    url  = "https://github.com/openweft/weft-app-gtk"
+  [[params.footerColumns.links]]
+    name = "weft-app-windows"
+    url  = "https://github.com/openweft/weft-app-windows"
+  [[params.footerColumns.links]]
+    name = "weft-app-android"
+    url  = "https://github.com/openweft/weft-app-android"
+  [[params.footerColumns.links]]
+    name = "weft-app-ios"
+    url  = "https://github.com/openweft/weft-app-ios"
+
+[[params.footerColumns]]
   title = "Community"
   [[params.footerColumns.links]]
     name = "GitHub org"
@@ -131,6 +149,11 @@ disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
     name       = "Design"
     url        = "#design"
     weight     = 20
+  [[menu.main]]
+    identifier = "apps"
+    name       = "Apps"
+    url        = "#apps"
+    weight     = 25
   [[menu.main]]
     identifier = "components"
     name       = "Components"

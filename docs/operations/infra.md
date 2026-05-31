@@ -16,17 +16,45 @@ bootstrap walks them in topological order.
 
 ## Default service set
 
-| Service          | Image / source                     | Purpose                                           |
-| ---------------- | ---------------------------------- | ------------------------------------------------- |
-| etcd             | OCI image                          | Cluster state ; Raft quorum (one per DC).         |
-| dex              | OCI image                          | OIDC identity provider.                           |
-| zot              | OCI image                          | Local OCI registry ; cached upstream pulls.       |
-| nats             | OCI image                          | Event bus + dynamic config push to guest agents.  |
-| coredns          | OCI image                          | DNS for `_weft._tcp.weft.internal` SRV records.   |
-| cubefs           | OCI image                          | Default storage backend (shares + buckets).       |
-| otel-collector   | OCI image                          | OpenTelemetry export pipeline.                    |
-| victoriametrics  | OCI image                          | Metrics storage.                                  |
-| perses           | OCI image                          | Dashboards.                                       |
+| Service          | Image / source                     | Purpose                                                       |
+| ---------------- | ---------------------------------- | ------------------------------------------------------------- |
+| etcd             | OCI image                          | Cluster state ; Raft quorum (one per DC).                     |
+| dex              | OCI image                          | OIDC identity provider.                                       |
+| zot              | OCI image                          | Local OCI registry ; cached upstream pulls.                   |
+| nats             | OCI image                          | Event bus + dynamic config push to guest agents.              |
+| coredns          | OCI image                          | DNS for `_weft._tcp.weft.internal` SRV records.               |
+| cubefs           | OCI image                          | Default storage backend (shares + buckets).                   |
+| weft-network     | `ghcr.io/openweft/weft-network`    | Routers / LBs / DNS zones / scheduling rules control plane.   |
+| weft-webui       | `ghcr.io/openweft/weft-webui`      | Browser dashboard ; talks to weft-agent + weft-network.       |
+| otel-collector   | OCI image                          | OpenTelemetry export pipeline.                                |
+| victoriametrics  | OCI image                          | Metrics storage.                                              |
+| perses           | OCI image                          | Dashboards.                                                   |
+
+### weft-network
+
+The networking control plane, sibling repo
+[`openweft/weft-network`](https://github.com/openweft/weft-network).
+Implements every RPC in [`weft-network-proto`](https://github.com/openweft/weft-network-proto)
+(routers, load balancers, DNS zones, DNS records, scheduling rules)
+and persists state in etcd under `/weft/network/*`. Three replicas
+per cluster, etcd-elected leader owns the data-plane reconciler
+(WireGuard peer config push, BGP daemon programming, Caddy config
+deltas), followers serve read-only snapshots and forward writes.
+
+Operability shape :
+- listens on `unix:///run/weft-network/weft-network.sock` (or
+  `tcp:host:port` for cross-host clusters)
+- exposes `/metrics` on `:9100` (separate listener — scrape failures
+  can't take down the control plane) — Prometheus build_info, RPC
+  counters + latency histograms, etcd-connected gauge
+- `/healthz` on the same metrics listener for load-balancer probes
+- ships a hardened systemd unit + Dockerfile (see the repo's
+  `deploy/` directory for the install playbook)
+
+When weft-network is unreachable, the dashboard's Networking panels
+degrade transparently to mock state — no hard error, no operator
+intervention. Pointing `weft-webui --weft-network-socket <addr>` at
+the daemon swaps mock for live.
 
 ## Status
 

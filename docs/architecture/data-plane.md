@@ -22,10 +22,17 @@ importing Caddy as a library :
 - **Operational consistency.** weft-agent already supervises subprocesses
   (`weft-driver-vz` / `-qemu` via go-plugin).
 
-`weft-network` watches the LoadBalancer / Router / Network catalogues
-in etcd and POSTs JSON deltas to each Caddy's admin socket
+[`weft-network`](https://github.com/openweft/weft-network) is the
+sibling control-plane daemon that owns the LoadBalancer / Router /
+DNS / SchedulingRule catalogues. It exposes the
+[`NetworkControlPlane`](https://github.com/openweft/weft-network-proto)
+gRPC service ; weft-agent dials it to fetch desired state, watches
+etcd events for deltas, and POSTs JSON to each Caddy's admin socket
 (`POST /load` on a unix socket owned by weft-agent). Sub-second
-config apply ; ACME owned entirely by Caddy.
+config apply ; ACME owned entirely by Caddy. weft-network exposes
+`/metrics` on a separate port (default `:9100`) for Prometheus
+scraping ; build_info + RPC counters + latency histograms +
+etcd-connected gauge.
 
 ### Cert sharing
 

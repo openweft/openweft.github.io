@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Weft logo B — letter W as two interlaced strands">
+  <title>Weft logo B — letter W as two interlaced strands</title>
+  <!--
+    Direction B : la lettre W formée par deux brins zig-zag qui s'entrelacent.
+    Brin bleu : \  /\  /  (passe par les deux pics)
+    Brin navy : descend dans les deux V (commence en haut entre les pics)
+    Aux deux points de croisement, l'ordre de tracé alterne via deux
+    segments séparés du brin navy, pour que la sensation de tressage
+    soit lisible même à 16 px.
+  -->
+  <g fill="none" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <!-- brin bleu : un W simple, posé par-dessus -->
+    <path d="M40 56 L80 200 L128 88 L176 200 L216 56" stroke="#2563eb"/>
+    <!-- brin navy, partie haute (par-dessus le brin bleu aux pics) -->
+    <path d="M80 56 L128 200" stroke="#172445"/>
+    <path d="M128 200 L176 56" stroke="#172445"/>
+  </g>
+</svg>

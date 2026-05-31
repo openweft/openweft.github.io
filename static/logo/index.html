@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Weft — explorations logo</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body  { font: 14px/1.5 -apple-system, ui-sans-serif, system-ui, sans-serif;
+            margin: 32px; max-width: 980px; }
+    h1    { font-size: 22px; margin: 0 0 4px; }
+    h2    { font-size: 16px; margin: 28px 0 8px; }
+    p     { margin: 6px 0 16px; color: #4a5a78; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid #e3e8f0;
+             vertical-align: middle; }
+    th    { font-weight: 600; color: #2a3a5e; background: #f4f6fc; }
+    .size16  img { width: 16px;  height: 16px; }
+    .size64  img { width: 64px;  height: 64px; }
+    .size256 img { width: 256px; height: 256px; }
+    .swatch  img { background: #ccd6ec; padding: 8px; border-radius: 8px; }
+    .swatch-dark img { background: #172445; padding: 8px; border-radius: 8px; }
+    .name { font-weight: 600; color: #172445; }
+    .rationale { font-size: 12px; color: #5b6da3; max-width: 320px; }
+    .rec  { background: #eef3ff; border-left: 4px solid #2563eb;
+            padding: 12px 16px; border-radius: 4px; margin: 12px 0 24px; }
+  </style>
+</head>
+<body>
+  <h1>Weft — explorations logo</h1>
+  <p>Trois directions distinctes. Chaque ligne est le même SVG rendu à 16 px (favicon), 64 px (icône d'application) et 256 px (grand format) — sur fond clair puis sur fond navy, pour vérifier que le mark tient sur les deux thèmes.</p>
+
+  <div class="rec">
+    <strong>Recommandation : direction A — trame sur chaîne.</strong> Lecture la plus directe du nom <em>weft</em> (la trame est <em>littéralement</em> le fil horizontal du tissage), géométrie pure qui reste lisible à 16 px en favicon, et zéro ambiguïté de marque avec d'autres projets cloud / VM. B est un letter-mark plus conventionnel ; C est plus dynamique mais perd la lecture "tissage" sous 32 px.
+  </div>
+
+  <h2>Comparaison côte-à-côte</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Direction</th>
+        <th>16 px</th>
+        <th>64 px</th>
+        <th>256 px (clair)</th>
+        <th>256 px (navy)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="name">A — Trame sur chaîne</div>
+          <div class="rationale">3 fils de chaîne (warp) + 1 fil de trame (weft) tissé dessus/dessous/dessus. Le plus littéral, le plus lisible aux petites tailles.</div>
+        </td>
+        <td class="size16"><img src="weft-A-weave.svg" alt=""></td>
+        <td class="size64"><img src="weft-A-weave.svg" alt=""></td>
+        <td class="size256 swatch"><img src="weft-A-weave.svg" alt=""></td>
+        <td class="size256 swatch-dark"><img src="weft-A-weave.svg" alt=""></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="name">B — W entrelacé</div>
+          <div class="rationale">La lettre W tracée par deux brins qui se croisent ; le tressage est caché dans la forme. Letter-mark coherent avec le wordmark "Weft".</div>
+        </td>
+        <td class="size16"><img src="weft-B-woven-w.svg" alt=""></td>
+        <td class="size64"><img src="weft-B-woven-w.svg" alt=""></td>
+        <td class="size256 swatch"><img src="weft-B-woven-w.svg" alt=""></td>
+        <td class="size256 swatch-dark"><img src="weft-B-woven-w.svg" alt=""></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="name">C — Navette</div>
+          <div class="rationale">La navette (shuttle) du métier qui dépose le fil. Plus dynamique, suggère orchestration / débit plutôt que le tissu fini. Perd en lisibilité sous 32 px.</div>
+        </td>
+        <td class="size16"><img src="weft-C-shuttle.svg" alt=""></td>
+        <td class="size64"><img src="weft-C-shuttle.svg" alt=""></td>
+        <td class="size256 swatch"><img src="weft-C-shuttle.svg" alt=""></td>
+        <td class="size256 swatch-dark"><img src="weft-C-shuttle.svg" alt=""></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Palette utilisée</h2>
+  <p>Reprise de <code>static/img/mesh-3d.svg</code> pour rester cohérent avec la landing actuelle.</p>
+  <ul>
+    <li><code>#2563eb</code> — bleu primaire (le fil de trame, accent)</li>
+    <li><code>#172445</code> — navy (les fils de chaîne, structure)</li>
+    <li><code>#43548a</code> — mid-navy (motion / accent secondaire)</li>
+    <li><code>#ccd6ec</code> — fond clair (la page)</li>
+  </ul>
+
+  <h2>Suite</h2>
+  <p>Une fois ta direction choisie, je décline en : (1) version horizontale icône + wordmark "Weft", (2) favicon multi-tailles, (3) variante monochrome (impression / fond complexe), (4) éventuel lockup vertical pour le hero de la landing.</p>
+</body>
+</html>

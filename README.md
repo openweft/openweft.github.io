@@ -1,4 +1,4 @@
-# openweft/pages
+# openweft/openweft.github.io
 
 Sources for **openweft.github.io** — the Weft project's landing page.
 Built by [Hugo](https://gohugo.io) (Go-native, single-binary, matches

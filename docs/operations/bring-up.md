@@ -19,7 +19,18 @@ drive lifecycle. Pre-requisites :
 
 After `weft up` finishes the host bring-up, `weft infra bootstrap`
 deploys the infrastructure microVMs in dependency order (etcd → dex,
-zot, nats → cubefs → otel). See [Infra services](infra.md).
+zot, nats → cubefs → weft-network / weft-webui → otel). See
+[Infra services](infra.md).
+
+The networking control plane (routers / LBs / DNS zones / scheduling
+rules) is now provided by the
+[`weft-network`](https://github.com/openweft/weft-network) daemon —
+its `Dockerfile` + hardened systemd unit live in the repo's
+`deploy/` directory. The dashboard
+([`weft-webui`](https://github.com/openweft/weft-webui)) dials it via
+`--weft-network-socket` ; when unreachable, the Networking panels
+fall back to mock state transparently so a missing daemon doesn't
+take the dashboard down.
 
 ## Minimal `cluster.hcl`
 

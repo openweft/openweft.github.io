@@ -74,6 +74,17 @@ $ weft infra status</code></pre>
       The CLI talks to a running <code>weft agent</code> over gRPC ; on a Mac laptop the same binary plays both
       roles, so there is no separate daemon to install.
     </p>
+    <p>
+      <code>weft microvm</code> is the <strong>default execution path</strong> : an OCI image becomes a
+      fast-boot micro-VM sharing the substrate kernel, with its rootfs served over virtio-fs (Apple-VZ) or
+      virtio-9p (QEMU). All new platform features land here first — Longhorn volumes, GPU flavors, CubeFS
+      shares, mesh networking, observability. The classic full-VM path (<code>weft instance</code>) stays
+      around as an <strong>escape hatch</strong> for the workloads microVMs can't reach : Windows / BSD
+      guests, network appliances distributed as VM images (<a href="https://vyos.io">VyOS</a>,
+      <a href="https://opnsense.org">OPNsense</a>, …), and workloads that need their own kernel
+      (forensics, KASAN, real-time). Same hypervisor drivers underneath, same scheduler, same flavors —
+      only the boot model differs.
+    </p>
   </section>
 
   <section id="api">
@@ -187,7 +198,9 @@ $ weft --servers _weft._tcp.weft.internal vm list</code></pre>
         <code>weft-agent</code> on every host</em>. No separate Envoy
         microVM, no plugin to install. <a href="https://www.wireguard.com">WireGuard</a>
         for mesh-to-mesh peering ; VyOS or FRR for BGP egress when a tenant
-        needs a public ASN.</li>
+        needs a public ASN — these ship as VM images and run via
+        <code>weft instance</code> (the classic-VM escape hatch), not as
+        microVMs.</li>
       <li><strong>Control plane</strong> — <code>weft-network</code>, a thin
         Go binary that subscribes to weft's event stream (LoadBalancer,
         Router, Network, microVM) and pushes deltas to each host's local
@@ -281,6 +294,7 @@ $ weft microvm run vllm/vllm-openai:latest --flavor ai-h200 --project team-alpha
     <ul class="features">
       <li><strong>Multi-DC control plane</strong> — three <code>weft</code> control-plane instances form an etcd quorum (one per AZ). Losing one DC keeps the platform writable ; the dispatch table re-routes around the failed host pool.</li>
       <li><strong>Multi-hypervisor</strong> — drivers load via <a href="https://github.com/hashicorp/go-plugin">go-plugin</a>. Apple's Virtualization framework lands first (<code>weft-driver-vz</code>) ; QEMU/KVM (<code>weft-driver-qemu</code>) and OpenBSD's vmd (<code>weft-driver-vmd</code>) are the next siblings.</li>
+      <li><strong>microVM-first, classic VM as escape hatch</strong> — <code>weft microvm</code> is the default execution path : OCI image → fast-boot micro-VM with shared kernel and virtio-fs / 9p rootfs. All new platform features land here first. <code>weft instance</code> covers the cases microVMs can't reach — <strong>Windows / BSD guests</strong>, <strong>network appliances</strong> (VyOS, OPNsense, …) distributed as VM images, and workloads that need <strong>their own kernel</strong> (forensics, KASAN, real-time). Both modes share the same hypervisor drivers, scheduler, placement rules, flavors (vCPU / RAM / GPU), volumes and shares — only the boot model differs. We don't invest <em>new</em> features into the classic-VM path ; it exists so an operator never hits a wall.</li>
       <li><strong>Multi-tenant</strong> — every resource is UUID-keyed and owned by a project + user. ACLs are first-class : OIDC tokens from <a href="https://dexidp.io">dex</a> carry tenant grants ; <code>weft-client</code> threads them onto every gRPC call.</li>
       <li><strong>Multi-AZ + multi-rack placement</strong> — HA intent expressed declaratively. A 3-replica NATS cluster declares <code>placement { count = 3, az = "different", rack = "different", host = "different" }</code> ; the scheduler picks one host per replica honouring the proximity hierarchy <code>AZ ⊃ Rack ⊃ Host</code>.</li>
       <li><strong>Infrastructure as micro-VMs</strong> — etcd, dex, zot, NATS, CoreDNS, Longhorn (distributed block storage : replicated volumes, snapshots, backups), CubeFS (distributed POSIX + S3 shares), the networking control plane (<code>weft-network</code>), and the observability stack (<code>otel-collector</code> / <code>victoriametrics</code> / <code>perses</code>) all run as weft-microvm-init micro-VMs on the same substrate as user workloads. The L4/L7 data plane is Caddy embedded directly in <code>weft-agent</code> on every host — no separate proxy microVM. <strong>Every component is a libre-licensed project</strong> (Apache 2.0 / BSD / LGPL) — CNCF-rooted where applicable (etcd, CoreDNS, CubeFS &amp; Longhorn graduated, NATS &amp; OpenTelemetry incubating, dex, zot, VictoriaMetrics &amp; Perses sandbox) — so the platform stands entirely on vendor-neutral, cloud-native foundations. One management plane, <code>weft start / stop / status</code> works for everything.</li>

@@ -18,9 +18,11 @@ drive lifecycle. Pre-requisites :
 ## Composing services
 
 After `weft up` finishes the host bring-up, `weft infra bootstrap`
-deploys the infrastructure microVMs in dependency order (etcd → dex,
-zot, nats → cubefs → weft-network / weft-webui → otel). See
-[Infra services](infra.md).
+deploys the infrastructure **microVMs** in dependency order (etcd →
+dex, zot, nats, coredns → longhorn (block) + cubefs (shares + buckets)
+→ weft-network / weft-webui → otel-collector / victoriametrics /
+perses). Every infra service runs as a microVM — no classic VMs in the
+default stack. See [Infra services](infra.md).
 
 The networking control plane (routers / LBs / DNS zones / scheduling
 rules) is now provided by the

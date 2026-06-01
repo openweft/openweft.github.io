@@ -34,3 +34,28 @@ client retries the next entry on failure.
 
 OIDC tokens issued by dex carry tenant grants. Every agent caches dex's
 JWKs locally, so token validation never crosses a DC boundary.
+
+## Scheduling and flavors
+
+A **flavor** is the compute envelope — vCPU, RAM, optional **GPU(s)**,
+and an optional cap on ephemeral scratch. The scheduler matches a
+microVM's flavor against the host inventory in etcd and picks a host
+with enough free capacity, honouring the proximity hierarchy
+(`AZ ⊃ Rack ⊃ Host`) when a placement rule demands it.
+
+GPUs are treated as just another resource dimension. Flavors declare
+them by model and count :
+
+```
+$ weft flavor set ai-h200 --vcpu 32 --ram 256Gi --gpu 1 --gpu-type nvidia-h200
+$ weft flavor set ws-rtx6 --vcpu 16 --ram 96Gi  --gpu 1 --gpu-type nvidia-rtx-6000-ada
+```
+
+The hardware target is **NVIDIA H200** (datacenter, MIG-capable — MIG
+slices surface as just another GPU type from the scheduler's point of
+view) and **RTX 6000 Ada** (workstation, whole-card bind, no MIG). The
+hypervisor driver binds the cards at start time via **VFIO PCI
+passthrough** on the QEMU/KVM driver. Apple-VZ doesn't expose discrete
+GPUs to guests, so GPU flavors are host-feature-gated ; scheduling
+them on a VZ-only host fails the placement up front rather than at
+boot.

@@ -1,5 +1,14 @@
 # microVM quickstart
 
+`weft microvm` is the **default execution path** : an OCI image
+becomes a fast-boot micro-VM sharing the substrate kernel, with its
+rootfs served over virtio-fs (Apple-VZ) or virtio-9p (QEMU). All new
+platform features land here first — Longhorn volumes, GPU flavors,
+CubeFS shares, mesh networking, observability. The classic full-VM
+path (`weft instance`) stays as an escape hatch for Windows / BSD
+guests, network appliances distributed as VM images, and workloads
+that need their own kernel.
+
 The first VM, two ways : straight from the `weft microvm` CLI, and via
 the Terraform provider. Pick whichever matches how you actually drive
 infrastructure ; the result is the same scheduled workload.

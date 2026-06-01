@@ -17,9 +17,9 @@ weft agent                         # long-lived control daemon
 weft project                       # tenant projects
 weft user                          # user lifecycle (usually via OIDC IdP)
 
-# Workloads
-weft microvm                       # tenant microVMs
-weft instance                      # legacy alias / classical VM lifecycle
+# Workloads — microvm is the default execution path ; instance is the escape hatch
+weft microvm                       # tenant microVMs (OCI image -> fast-boot micro-VM, shared kernel)
+weft instance                      # classic full VM ; for Windows / BSD guests, VM-image network appliances, custom kernels
 
 # Storage
 weft volume                        # block volumes (RWO)
@@ -74,18 +74,51 @@ See [`weft microvm`](../cli/microvm.md) for the full flag matrix.
 ## `weft volume`
 
 ```
-weft volume create  NAME --size <bytes> [--flavor <name>]
+weft volume create  NAME --size <bytes> [--type block|file] [--source /dev/...] [--flavor <name>]
 weft volume ls
 weft volume rm      NAME
 weft volume attach  NAME --vm <name>
 weft volume detach  NAME --vm <name>
 ```
 
-A `weft volume snapshot` subcommand is on the roadmap to wrap the
-reflink CoW path described in
-[Backup & restore](../operator-handbook/backup-and-restore.md). Today
-the operator runs `cp --reflink=always` (Linux) or `cp -c` (APFS)
-against the volume image directly.
+The default backend for `--type block` (or no `--type`) is
+[Longhorn](https://www.cncf.io/projects/longhorn/) — replicated block
+storage with snapshots and backups. Escape hatches : `--source
+/dev/nvmeXn1` passes a host device straight through (raw bandwidth, no
+replication), `--type file` is a host-side image. All three surface
+inside the guest as virtio-blk.
+
+A `weft volume snapshot` subcommand is on the roadmap to wrap
+Longhorn's snapshot path ; the reflink CoW described in
+[Backup & restore](../operator-handbook/backup-and-restore.md) covers
+the file/passthrough escape hatches. Today the operator runs `cp
+--reflink=always` (Linux) or `cp -c` (APFS) against the volume image
+directly for the non-Longhorn paths.
+
+## `weft flavor`
+
+```
+weft flavor set NAME --vcpu N --ram <bytes> [--ephemeral <bytes>] [--gpu N --gpu-type MODEL]
+weft flavor ls
+weft flavor rm NAME
+```
+
+Flavors are the compute envelope — vCPU, RAM, optional GPU(s), optional
+ephemeral scratch cap. GPUs are scheduled like vCPU / RAM : declare a
+count and a model, the scheduler picks a host with that many free
+matching cards, the hypervisor driver binds them via VFIO PCI
+passthrough on QEMU/KVM.
+
+```
+$ weft flavor set ai-h200 --vcpu 32 --ram 256Gi --gpu 1 --gpu-type nvidia-h200          --ephemeral 400Gi
+$ weft flavor set ws-rtx6 --vcpu 16 --ram 96Gi  --gpu 1 --gpu-type nvidia-rtx-6000-ada  --ephemeral 200Gi
+```
+
+Supported `--gpu-type` values today : `nvidia-h200` (datacenter,
+MIG-capable — slices surface as just another GPU type to the
+scheduler) and `nvidia-rtx-6000-ada` (workstation, whole-card bind).
+The Apple-VZ driver doesn't expose discrete GPUs to guests, so GPU
+flavors are host-feature-gated.
 
 ## `weft up` / `weft down`
 

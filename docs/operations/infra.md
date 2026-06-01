@@ -1,7 +1,10 @@
 # Infra services
 
-`weft infra bootstrap` brings up the infrastructure microVMs in
-dependency order :
+`weft infra bootstrap` brings up the infrastructure **microVMs** in
+dependency order. Every service the platform installs by default
+runs as a `weft microvm` — there are no classic VMs in the standard
+stack ; `weft instance` is reserved for tenant workloads that need
+it (Windows / BSD guests, VM-image network appliances).
 
 ```
 $ weft infra bootstrap            # deploys all infra services
@@ -23,8 +26,10 @@ bootstrap walks them in topological order.
 | zot              | OCI image                          | Local OCI registry ; cached upstream pulls.                   |
 | nats             | OCI image                          | Event bus + dynamic config push to guest agents.              |
 | coredns          | OCI image                          | DNS for `_weft._tcp.weft.internal` SRV records.               |
-| cubefs           | OCI image                          | Default storage backend (shares + buckets).                   |
+| longhorn         | OCI image                          | Default block-volume backend (replicated, snapshots, backups). |
+| cubefs           | OCI image                          | Default shares + buckets backend (POSIX RWX + S3).            |
 | weft-network     | `ghcr.io/openweft/weft-network`    | Routers / LBs / DNS zones / scheduling rules control plane.   |
+| weft-router      | `ghcr.io/openweft/weft-router`     | Per-tenant BGP speaker (GoBGP) — only when a tenant declares an ASN. |
 | weft-webui       | `ghcr.io/openweft/weft-webui`      | Browser dashboard ; talks to weft-agent + weft-network.       |
 | otel-collector   | OCI image                          | OpenTelemetry export pipeline.                                |
 | victoriametrics  | OCI image                          | Metrics storage.                                              |

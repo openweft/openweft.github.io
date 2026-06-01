@@ -1,6 +1,11 @@
 # `weft microvm`
 
-Boot, list, log, and remove tenant microVMs. The Docker-`run` analogue.
+Boot, list, log, and remove tenant microVMs. The Docker-`run` analogue,
+and the **default execution path** on the platform — every new feature
+lands here first. `weft instance` covers the classic-VM escape hatch
+for Windows / BSD guests, network appliances distributed as VM images
+(VyOS, OPNsense, …), and workloads that need their own kernel ; both
+share the same drivers, scheduler and flavors.
 
 ```
 $ weft microvm run IMAGE[:TAG] [-- CMD...]

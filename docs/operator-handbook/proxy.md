@@ -5,6 +5,24 @@ as a subprocess on every host. The agent owns the lifecycle ; routes
 land via etcd watch → JSON POST to Caddy's admin socket. ACME-driven
 auto-HTTPS, sub-second config reloads, no separate proxy box.
 
+- **L7 (HTTP)** is plain Caddy.
+- **L4 (TCP/UDP)** is the same Caddy through the
+  [caddy-l4](https://github.com/mholt/caddy-l4) plugin — one binary,
+  no separate Envoy microVM.
+- **BGP egress**, when a tenant needs a public ASN, lives in a
+  separate [`weft-router`](https://github.com/openweft/weft-router)
+  microVM speaking [GoBGP](https://osrg.github.io/gobgp/) (BGP-4 +
+  EVPN + flowspec) — it programs the kernel FIB via netlink.
+- **NAT egress** without an ASN is plain netfilter / nft pushed by
+  `weft-network` directly onto the hosts (no VM).
+
+VyOS / OPNsense / FRR are not part of the default proxy or routing
+stack. They stay as an escape hatch via `weft instance` for tenants
+who need multi-protocol setups (OSPF / IS-IS / RSVP-TE) or want to
+bring their own router config — same deal as for Windows guests and
+other VM-image appliances. The Go-native stack above covers
+everything else.
+
 ## Canonical runbook
 
 The end-to-end operator guide lives in the `weft` repo :

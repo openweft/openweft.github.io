@@ -193,14 +193,27 @@ $ weft --servers _weft._tcp.weft.internal vm list</code></pre>
       data plane reconciles.
     </p>
     <ul class="features">
-      <li><strong>Data plane</strong> — <a href="https://caddyserver.com">Caddy</a>
-        (Apache 2.0, pure-Go, auto-HTTPS via ACME) <em>embedded inside
-        <code>weft-agent</code> on every host</em>. No separate Envoy
-        microVM, no plugin to install. <a href="https://www.wireguard.com">WireGuard</a>
-        for mesh-to-mesh peering ; VyOS or FRR for BGP egress when a tenant
-        needs a public ASN — these ship as VM images and run via
-        <code>weft instance</code> (the classic-VM escape hatch), not as
-        microVMs.</li>
+      <li><strong>Data plane, Go-native by default</strong> —
+        <strong>L7 (HTTP)</strong> via <a href="https://caddyserver.com">Caddy</a>
+        (Apache 2.0, pure-Go, auto-HTTPS via ACME) embedded inside
+        <code>weft-agent</code> on every host. <strong>L4 (TCP/UDP)</strong> via
+        the same Caddy through the
+        <a href="https://github.com/mholt/caddy-l4">layer4</a> plugin — one
+        binary, no separate Envoy microVM. <strong>Mesh peering</strong> via
+        <a href="https://www.wireguard.com">WireGuard</a> in-kernel.
+        <strong>BGP egress</strong>, when a tenant needs a public ASN, lives in
+        a small <code>weft-router</code> microVM running
+        <a href="https://osrg.github.io/gobgp/">GoBGP</a> (Apache 2.0, pure-Go,
+        BGP-4 + EVPN + flowspec — the same engine
+        <a href="https://www.tigera.io/project-calico/">Calico</a> and
+        <a href="https://cilium.io/">Cilium</a> ship) ; it programs the kernel
+        FIB via netlink, boots in a few hundred milliseconds, footprint ~tens
+        of MB. <strong>NAT egress</strong> for tenants without an ASN is plain
+        netfilter / nft pushed by <code>weft-network</code> — no VM at all.
+        <em>Escape hatch</em> : when a tenant brings a complex multi-protocol
+        setup (OSPF / IS-IS / RSVP-TE) or wants its own VyOS / OPNsense
+        config, run it as a classic VM via <code>weft instance</code> ; same
+        deal as for Windows guests and other VM-image appliances.</li>
       <li><strong>Control plane</strong> — <code>weft-network</code>, a thin
         Go binary that subscribes to weft's event stream (LoadBalancer,
         Router, Network, microVM) and pushes deltas to each host's local

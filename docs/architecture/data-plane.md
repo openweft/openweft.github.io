@@ -193,6 +193,60 @@ LastError, PublishedAtUnix}` on `weft.firewall.<vm-uuid>.status`,
 so the UI can show per-VM enforcement health without a per-VM
 gRPC fanout.
 
+## Floating IPs — host-side nftables NAT
+
+Public-routable addresses ("floating IPs") allocated from an edge
+network can be bound to a private VM and back, the OpenStack-
+familiar way :
+
+```
+weft floating-ip allocate --project p --network public
+  → 203.0.113.42 (status: available)
+weft floating-ip map  203.0.113.42 --vm web-1
+  → 203.0.113.42 → vm "web-1" (status: active)
+```
+
+Control-plane lives in [weft](https://github.com/openweft/weft) :
+the [`floating_ips` registry](https://github.com/openweft/weft/blob/main/floating_ips.go)
+walks the chosen network's CIDR for the next free address (skipping
+the network/broadcast addresses, every port-occupied IP, and the
+network's reserved gateway), enforces the lifecycle invariants
+(Allocate → Map ⇄ Unmap → Release, idempotent on same-target
+Map, refuses Release on an active FIP), and publishes
+`floating_ip.{allocated,released,mapped,unmapped}` events on the
+existing bus.
+
+Data plane lives in
+[`weft/floatingipnat`](https://github.com/openweft/weft/tree/main/floatingipnat) :
+a per-host Watcher subscribes to those events, recomputes the
+local VM → FIP mappings on every relevant kind, and calls the
+nftables Reconciler.Apply :
+
+```
+table ip weft-fip-nat {
+  chain prerouting  { type nat hook prerouting  priority dstnat ;
+    ip daddr <public-ip> dnat to <private-ip>   # per active mapping
+  }
+  chain postrouting { type nat hook postrouting priority srcnat ;
+    ip saddr <private-ip> snat to <public-ip>   # per active mapping
+  }
+}
+```
+
+Same google/nftables (pure-Go netlink) backend the firewall
+reconciler uses, replace-set per netlink batch so an external
+observer never sees a half-applied policy, IPv4-only for now.
+Each rule carries a `nft -a list ruleset`-readable comment with
+the VM name so an operator can map a rule to its tenant intent
+at a glance.
+
+The Watcher's `ComputeLocalMappings` is pure (no IO) : it walks
+every FIP in the registry, drops the ones not bound to a local
+VM, joins on the VM's first port that has an IP. Multi-NIC VMs
+get their lowest-UUID port deterministically picked in v0 ; a
+future revision will let `MapFloatingIP` carry an explicit port
+UUID so the operator targets a specific NIC.
+
 ## Block volumes — Longhorn default
 
 The default backend for `weft volume create --type block` is

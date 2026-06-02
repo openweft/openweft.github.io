@@ -148,15 +148,21 @@ desired-state push.
 | weft control plane  |  NATS | weft-microvm-     | nft  |   Linux kernel   |
 |  (SG, Network,      | ────► |  agent (in-VM)    | ───► |   table inet     |
 |   Port registries)  |       |  firewall sub     |      |     weft-fw      |
-+---------┬-----------+       +-------------------+      +------------------+
-          │
-          │  EffectiveFirewall(vmUUID) — per-VM resolver
-          │   • merge every SG attached to every port
-          │   • deref every remote_group reference → /32 (or /128) of
-          │     every other port currently bound to that SG
-          │   • dedup, validate
-          ▼
-  weft.firewall.<vm-uuid>   payload: pod.Firewall (flat rule list)
++---------┬-----------+       +---------┬---------+      +--------┬---------+
+          │                             │                         │
+          │  EffectiveFirewall          │  every 10 s :           │
+          │   (vmUUID) →                │  ReadFirewallStatus     │
+          │   pod.Firewall              │  (kernel netlink)       │
+          │                             ▼                         │
+          ▼                       pod.FirewallStatus              │
+  weft.firewall.<vm-uuid>      {Overall, RulesInstalled, ...}    │
+  (desired ruleset)                                                │
+                              weft.firewall.<vm-uuid>.status      │
+                              ─────────────────────────────────── │
+                                                  ↑               │
+                                                  └───────────────┘
+                                              (status subject — UI
+                                               + control-plane consume)
 ```
 
 The host-side publisher
@@ -179,6 +185,13 @@ agent stays cross-platform for dev. Default chain policy is
 traffic and loopback work without a mirrored rule) and
 `output → accept` ; tenants opt into ingress allow-rules through
 Security Groups.
+
+A reverse-direction status emitter inside the same agent polls the
+kernel table every 10 s (`--firewall-status-every`) and publishes
+`pod.FirewallStatus{Overall, TableInstalled, RulesInstalled,
+LastError, PublishedAtUnix}` on `weft.firewall.<vm-uuid>.status`,
+so the UI can show per-VM enforcement health without a per-VM
+gRPC fanout.
 
 ## Block volumes — Longhorn default
 

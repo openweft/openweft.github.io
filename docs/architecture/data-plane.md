@@ -134,6 +134,52 @@ other VM-image appliances. This is the only path on which VyOS /
 OPNsense / FRR are deployed by the platform ; the Go-native router /
 LB stack covers everything else.
 
+## Stateful firewall — per-VM nftables
+
+Security Groups created via the weft control plane (Network /
+SecurityGroup / Port RPCs) are enforced inside each micro-VM by
+[`weft-microvm-agent`](https://github.com/openweft/weft-microvm-agent)'s
+`firewall` subscriber, which converges a kernel `nftables` table
+named `weft-fw` against the per-VM effective ruleset on every
+desired-state push.
+
+```
++---------------------+       +-------------------+      +------------------+
+| weft control plane  |  NATS | weft-microvm-     | nft  |   Linux kernel   |
+|  (SG, Network,      | ────► |  agent (in-VM)    | ───► |   table inet     |
+|   Port registries)  |       |  firewall sub     |      |     weft-fw      |
++---------┬-----------+       +-------------------+      +------------------+
+          │
+          │  EffectiveFirewall(vmUUID) — per-VM resolver
+          │   • merge every SG attached to every port
+          │   • deref every remote_group reference → /32 (or /128) of
+          │     every other port currently bound to that SG
+          │   • dedup, validate
+          ▼
+  weft.firewall.<vm-uuid>   payload: pod.Firewall (flat rule list)
+```
+
+The host-side publisher
+([`weft/firewallpub`](https://github.com/openweft/weft/tree/main/firewallpub))
+reacts to the existing event bus :
+`security_group.{rules_updated,deleted,…}` republishes every port
+that references the SG (directly or via the network's defaults) ;
+`port.{created,security_groups_updated,deleted}` republishes that
+port's VM ; `network.default_security_groups_updated` republishes
+every port that inherits ; `vm.created` seeds the new VM with an
+initial state. Every publish is whole-state ; a missed message
+self-heals on the next one.
+
+The reconciler uses [google/nftables](https://github.com/google/nftables)
+(pure-Go netlink, no `iptables`/`nft` fork-exec), and runs only on
+Linux ; the darwin host build falls back to a no-op stub so the
+agent stays cross-platform for dev. Default chain policy is
+`input → drop` (with `ct state established,related accept` and
+`iifname "lo" accept` always at the top of the chain so reply
+traffic and loopback work without a mirrored rule) and
+`output → accept` ; tenants opt into ingress allow-rules through
+Security Groups.
+
 ## Block volumes — Longhorn default
 
 The default backend for `weft volume create --type block` is

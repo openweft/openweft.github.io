@@ -72,6 +72,59 @@ implementations are all Go-native.
 - **NAT egress** — for tenants without an ASN, plain netfilter / nft
   pushed by `weft-network` directly onto the hosts. No VM at all.
 
+### Router orchestration pipeline
+
+`weft-router` micro-VMs and their controller in `weft-network` talk
+over **four NATS subjects** plus a small lifecycle seam.
+End-to-end shape for one egress Router :
+
+```
+operator                                                              upstream
+   │                                                                     │
+   ▼                                                                     ▼
+weft-network.CreateRouter (backend=gobgp)                            BGP peer
+   │                                                                     ▲
+   ├── store.Create   (etcd / memory ; Router resource is now durable)   │
+   ├── publisher      ──── weft.router.<uuid>.config ──► subscriber ─────┤
+   │                       (peers + prefixes)              (ApplyPeers   │
+   │                                                       + ApplyPaths) │
+   └── lifecycle.Ensure ──[orchestrator]──► weft-router micro-VM         │
+                            (spawn from                                  │
+                            ghcr.io/openweft/weft-router:vX.Y)           │
+                                                                         │
+                          ◄── weft.router.<uuid>.status ──── emitter ────┘
+              store.UpdateStatus (peer state / route count)
+              via statusreceiver, surfaced on the dashboard
+```
+
+**Components, by package :**
+
+- `weft-network/internal/publisher` — pushes the desired state
+  (peers + prefixes) on `weft.router.<uuid>.config` whenever the
+  Router resource is created or its config changes. Idempotent ; a
+  reboot of `weft-network` triggers a `ResyncRouters` sweep that
+  re-publishes for every router in the store.
+- `weft-router/internal/subscriber` — listens on the matching
+  subject, decodes, calls `bgp.Server.ApplyPeers` and
+  `bgp.Server.ApplyPrefixes` on its in-process GoBGP instance.
+- `weft-router/internal/statusemitter` — every `--status-interval`
+  (10 s default), polls GoBGP for live peer states and route counts
+  and publishes `RouterStatus` on `weft.router.<uuid>.status`.
+- `weft-network/internal/statusreceiver` — wildcard-subscribes to
+  `weft.router.*.status`, decodes, calls `store.UpdateStatus` with
+  a rolled-up `Status` ("active" / "configuring" / "down") and a
+  printable `PeerState`. The dashboard reads from the same store.
+- `weft-network/internal/lifecycle` — the seam that asks "an
+  orchestrator" to ensure / destroy the matching micro-VM. The
+  default `Noop` implementation just logs the intent ; operators
+  hand-spawn `weft microvm run ghcr.io/openweft/weft-router:<tag>`
+  while the real `WeftClient` implementation matures. When wired,
+  it'll go through the same `weft API → weft-agent` path everyone
+  else uses to schedule micro-VMs.
+
+Every leg is idempotent and re-runs on weft-network restart, so a
+transient outage on any subject self-heals on the next reconcile.
+
 ### Escape hatch — VyOS / OPNsense / FRR
 
 When a tenant needs a complex multi-protocol setup (OSPF / IS-IS /

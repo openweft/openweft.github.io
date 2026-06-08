@@ -20,9 +20,14 @@ Weft's design rests on a few load-bearing decisions :
 - **Pull model across daemons.** Cross-daemon coordination is reconcile-on-watch,
   not push. The hot path of `weft-agent` is self-sufficient ;
   `weft-network` reconciles from etcd events.
-- **Multi-hypervisor via go-plugin.** Drivers (`weft-driver-vz`,
-  `weft-driver-qemu`, …) ship as standalone subprocesses speaking gRPC ;
-  the core stays pure-Go CGO=0 even on darwin.
+- **Multi-hypervisor via go-plugin — four backends.** Drivers ship as
+  standalone subprocesses speaking gRPC ; the core stays pure-Go
+  CGO=0 even on darwin. `weft-driver-vz` covers Apple Virtualization
+  on macOS, `weft-driver-qemu` covers QEMU/KVM on Linux (QEMU/TCG for
+  dev under Tart / nested-virt-free hosts), `weft-driver-vmd` covers
+  OpenBSD `vmd(8)`, and `weft-driver-dcs` drives Huawei FusionCompute
+  (UVP) via its VRM REST API. Driver images are pulled by digest from
+  GHCR per host.
 - **Caddy in weft-agent.** The L4/L7 data plane is Caddy embedded as a
   supervised subprocess inside `weft-agent` on every host — no separate
   proxy microVM, no plugin to install. ACME-driven auto-HTTPS. L4 via the
@@ -44,8 +49,18 @@ Weft's design rests on a few load-bearing decisions :
   the scheduler treats them like vCPU / RAM, picks a host with
   enough free cards, and the hypervisor driver binds them at start
   time via VFIO PCI passthrough on the QEMU/KVM driver.
-- **Libre licensing.** Every component is libre (Apache 2.0 / BSD / LGPL /
-  AGPL where unavoidable) ; SSPL / BUSL / RSAL are out by policy.
+- **Respawn policy on scheduling rules.** `SchedulingRule.RespawnPolicy`
+  (proto v0.10.0) lets a rule declare a respawn block with backoff and
+  liveness probe (HTTP / TCP) ; `weft-agent` embeds the state machine
+  and a bus subscriber + status poller that detect VM death and
+  respawn within the declared budget. V0.1.2 adds systemd
+  `Type=notify` integration and `etcdcoord` primitives (host-liveness
+  lease, prefix watcher, per-key leader election) as the foundation
+  for cross-host failover.
+- **Greenfield code is BSD 3-Clause** ; forks-and-adapt keep their
+  upstream license (e.g. `weft-block` stays Apache 2.0 as a fork of
+  `longhorn-engine`). Third-party deps : Apache 2.0 / MIT / BSD ; SSPL /
+  BUSL / RSAL are out by policy.
 
 ## Read next
 

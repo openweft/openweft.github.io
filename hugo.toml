@@ -10,7 +10,7 @@ disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
   # Consommée par : H1 sr-only ("Weft — {description}"), meta description
   # SEO, et le paragraphe descriptif du footer — sans le "Weft is an"
   # initial qui faisait doublon avec .Site.Title dans le H1.
-  description = "Open, Go-native, secure, multi-hypervisor, multi-tenant, multi-AZ cloud platform. One binary, server or client, like the HashiCorp tools."
+  description = "Open, Go-native, secure, microVM-first, multi-hypervisor, multi-tenant, multi-AZ cloud platform. One binary, server or client, like the HashiCorp tools."
   brand       = "Weft"
   github      = "openweft"
   # heroEyebrow retiré — la même info ("Open, Go-native, multi-tenant…")
@@ -30,7 +30,7 @@ disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
   heroIntro = [
     # Pitch : doit tenir sur UNE ligne dans le container 1080 px — la
     # CSS .hero .intro p:first-child fige sa font-size pour que ça passe.
-    "Weft is an <strong>open, Go-native cloud platform</strong> — multi-hypervisor, multi-tenant, multi-AZ.",
+    "Weft is an <strong>open, Go-native cloud platform</strong> — microVM-first, multi-hypervisor, multi-tenant, multi-AZ.",
     # Étymologie + métaphore : paragraphe distinct, style courant.
     "The name comes from weaving : the <em>weft</em> is the thread that crosses perpendicularly through the warp to form fabric, exactly what middleware does between heterogeneous hosts, networks, and storage backends.",
     "One binary, server or client mode, like the HashiCorp tools. Runs on a laptop. Scales to a 3-DC cluster."

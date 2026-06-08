@@ -19,21 +19,29 @@ bootstrap walks them in topological order.
 
 ## Default service set
 
-| Service          | Image / source                     | Purpose                                                       |
-| ---------------- | ---------------------------------- | ------------------------------------------------------------- |
-| etcd             | OCI image                          | Cluster state ; Raft quorum (one per DC).                     |
-| dex              | OCI image                          | OIDC identity provider.                                       |
-| zot              | OCI image                          | Local OCI registry ; cached upstream pulls.                   |
-| nats             | OCI image                          | Event bus + dynamic config push to guest agents.              |
-| coredns          | OCI image                          | DNS for `_weft._tcp.weft.internal` SRV records.               |
-| longhorn         | OCI image                          | Default block-volume backend (replicated, snapshots, backups). |
-| cubefs           | OCI image                          | Default shares + buckets backend (POSIX RWX + S3).            |
-| weft-network     | `ghcr.io/openweft/weft-network`    | Routers / LBs / DNS zones / scheduling rules control plane.   |
-| weft-router      | `ghcr.io/openweft/weft-router`     | Per-tenant BGP speaker (GoBGP) — only when a tenant declares an ASN. |
-| weft-webui       | `ghcr.io/openweft/weft-webui`      | Browser dashboard ; talks to weft-agent + weft-network.       |
-| otel-collector   | OCI image                          | OpenTelemetry export pipeline.                                |
-| victoriametrics  | OCI image                          | Metrics storage.                                              |
-| perses           | OCI image                          | Dashboards.                                                   |
+| Service          | Image / source                       | Purpose                                                       |
+| ---------------- | ------------------------------------ | ------------------------------------------------------------- |
+| etcd             | `ghcr.io/openweft/weft-etcd`         | Cluster state ; Raft quorum (one per DC). 4-arch built in-house. |
+| dex              | `ghcr.io/openweft/weft-dex`          | OIDC identity provider. 4-arch built in-house.                |
+| zot              | `ghcr.io/openweft/weft-zot`          | Local OCI registry ; cached upstream pulls. 4-arch.           |
+| nats             | `ghcr.io/openweft/weft-nats`         | Event bus + dynamic config push to guest agents. 4-arch.      |
+| coredns          | `ghcr.io/openweft/weft-coredns`      | DNS for `_weft._tcp.weft.internal` SRV records. 4-arch.       |
+| longhorn         | OCI image (`weft-block` data plane)  | Default block-volume backend (replicated, snapshots, backups). |
+| cubefs           | OCI image                            | Default shares + buckets backend (POSIX RWX + S3).            |
+| weft-network     | `ghcr.io/openweft/weft-network`      | Routers / LBs / DNS zones / scheduling rules control plane.   |
+| weft-router      | `ghcr.io/openweft/weft-router`       | Per-tenant BGP speaker (GoBGP) — only when a tenant declares an ASN. |
+| weft-webui       | `ghcr.io/openweft/weft-webui`        | Browser dashboard ; talks to weft-agent + weft-network. 4-arch. |
+| weft-doctor      | `ghcr.io/openweft/weft-doctor`       | AI log triage v0.1 (Ollama-only, passive — NATS in, NATS out). |
+| weft-loom-server | `ghcr.io/openweft/weft-loom-server`  | Collaborative editor v0.2 (CodeMirror 6 + Yjs relay) ; optional. |
+| otel-collector   | OCI image                            | OpenTelemetry export pipeline.                                |
+| victoriametrics  | OCI image                            | Metrics storage.                                              |
+| perses           | OCI image                            | Dashboards.                                                   |
+
+The 4-arch infra images (`weft-etcd`, `weft-dex`, `weft-nats`, `weft-zot`,
+`weft-coredns`) are built from source in-house under
+[`openweft/weft-*`](https://github.com/openweft) — multi-stage
+Dockerfiles, distroless base, tag-gated workflows that target
+**amd64 + arm64 + riscv64 + loong64** via `buildx` + qemu binfmt.
 
 ### weft-network
 

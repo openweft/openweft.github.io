@@ -12,3 +12,6 @@ classic-VM-only service in the default stack.
 - [Infra services](infra.md) — etcd, dex, zot, nats, cubefs, longhorn,
   weft-network, weft-webui, otel ; what `weft infra bootstrap`
   actually runs.
+- [Floating IPs](floating-ips.md) — allocate, map, unmap, release ;
+  verifying the host-side nftables NAT ; multi-NIC and migration
+  troubleshooting.

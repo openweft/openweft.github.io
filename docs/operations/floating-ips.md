@@ -233,6 +233,66 @@ NIC. Until then, if you need the FIP on a specific NIC, either
 keep your VM single-NIC for FIP-exposed workloads or order the
 port creation so the intended NIC's UUID sorts first.
 
+## Startup seed and 30s drift poller
+
+`weft-network` does not rely on the NATS subscriber alone to learn
+the live FIP set. When the daemon starts, **before** the
+subscriber goes live, it pulls every active floating IP from weft
+via `ListFloatingIPs`, seeds the per-network index, and fires
+`onChange` for each affected router. The publisher's first
+`DesiredState` message therefore carries the live FIP set
+instead of an empty one — without this seed, a clean restart
+would briefly withdraw every /32 from upstream BGP before the
+first NATS event refilled the index.
+
+A 30s safety-net poller continues to tick after startup. On every
+tick it re-pulls `ListFloatingIPs` and `ReplaceAll`'s the index,
+catching events the subscriber may have missed (NATS reconnect
+storms, slow consumer drops, transient network partitions). The
+implementation lives in `internal/fips/poller.go` of weft-network.
+
+What an operator sees in `weft-network` logs at startup :
+
+```
+INFO  fip index seeded from weft entries=17
+```
+
+On a transient seed failure (weft daemon unreachable, RBAC
+denied, gRPC timeout) :
+
+```
+WARN  fip seed from weft failed ; index starts empty, the next event refills it  err="..."
+```
+
+The daemon **does not** exit on seed failure — it keeps running,
+the index starts empty, and the next `floating_ip.mapped` /
+poller tick refills it. Then, every 30s :
+
+```
+DEBUG fips poller tick  why=refresh  added_nets=0
+```
+
+`added_nets` is non-zero only when the poller's pull diverged from
+the subscriber's view — useful as a drift indicator. A persistent
+non-zero value points at a misbehaving subscriber, not at a
+healthy poller.
+
+### Failure modes
+
+- **`--weft-socket` not set.** The poller cannot reach the weft
+  daemon and is **skipped entirely** — neither the startup seed nor
+  the 30s tick run. The subscriber alone is responsible for keeping
+  the index in sync. This is the right default for single-host dev,
+  where `--nats` is also typically empty.
+- **weft daemon unreachable at restart.** Seed logs the `WARN`
+  above and continues. The index starts empty, no /32 is announced
+  until the first NATS event arrives or the next poller tick (≤30s)
+  succeeds.
+- **NATS unreachable at restart.** Seed succeeds (the poller path
+  is independent of NATS), the subscriber loop is skipped, and the
+  30s poller becomes the **sole** source of index updates until
+  NATS recovers. Drift will be bounded by the tick period.
+
 ## Limits and caveats
 
 - **IPv4 only.** The Reconciler emits `ip daddr` / `ip saddr`
@@ -246,6 +306,11 @@ port creation so the intended NIC's UUID sorts first.
   plane.
 - **Host-side NAT only.** As covered in troubleshooting above,
   external reachability still depends on upstream routing.
+- **30s drift window on the BGP layer.** If the Subscriber misses
+  a `floating_ip.*` event (NATS reconnect, slow consumer drop), the
+  FIP shows up in BGP at most ~30s late — the next poller tick
+  reconciles. The tick period is hard-coded today ; exposing it as
+  a config flag is a follow-up.
 
 ## See also
 

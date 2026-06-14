@@ -247,6 +247,40 @@ get their lowest-UUID port deterministically picked in v0 ; a
 future revision will let `MapFloatingIP` carry an explicit port
 UUID so the operator targets a specific NIC.
 
+### BGP-announced /32 prefixes (Internet-routable)
+
+Host-side NAT alone makes a FIP reachable on the LAN ; for traffic
+from the public Internet to actually arrive on the openweft host,
+the upstream router/ISP needs a route. For tenants with their own
+public ASN, openweft closes that loop via the existing weft-router
+microVM :
+
+```
+weft (control plane) ─ "floating_ip.{allocated,mapped,unmapped,released}"
+                                   ▼ NATS "weft.events.floating_ip.>"
+weft-network ── fips.Subscriber → fips.Index
+                                   ▼ ActiveFIPsInNetworks(r.Networks)
+weft-network.publisher.StateFor ─ DesiredState.Prefixes += <addr>/32
+                                   ▼ NATS "weft.router.<uuid>.config"
+weft-router ── bgp.ApplyPrefixes → GoBGP AddPath → upstream ISP
+```
+
+Implementation lives in
+[`weft-network/internal/fips/`](https://github.com/openweft/weft-network/tree/main/internal/fips)
+(NATS subscriber + thread-safe per-network index) +
+[`weft-network/internal/publisher`](https://github.com/openweft/weft-network/tree/main/internal/publisher)
+(`FIPLookup` interface, `StateFor` appends /32 v4 + /128 v6 single-
+host prefixes to the operator-typed announce list). Every relevant
+FIP mutation triggers a re-Publish of every router stitching the
+affected network, so weft-router picks up the new announce set
+within one publish round-trip. weft-router itself needed zero
+changes — GoBGP accepts /32 + /128 via the same `bgp.ApplyPrefixes`
+path that's been live since v0.1.
+
+Without `--nats` (single-host dev), the BGP layer is skipped and
+FIPs stay host-NAT only — valid for development, just not
+externally reachable.
+
 ## Block volumes — Longhorn default
 
 The default backend for `weft volume create --type block` is

@@ -164,19 +164,46 @@ already-released FIP is a no-op.
 
 ### "I allocated and mapped, but the Internet doesn't reach my VM"
 
-Today the FIP is **host-side NAT only**. The Reconciler installs
-DNAT + SNAT rules on the host that runs the target VM, but
-`weft` does not announce the FIP's address upstream. For traffic
-from outside the cluster to actually land on that host, the
-upstream router or ISP needs an existing route that points the
-FIP's prefix at the host's public interface — typically a static
-route configured on the edge router, or BGP at the IXP level.
+Two paths get traffic to land on the host running the target VM :
 
-BGP-driven FIP announcement (so the cluster owns the upstream
-advertisement itself) is documented future work ; track it
-through the
-[`weft-router`](https://github.com/openweft/weft-router) repo,
-which already runs GoBGP per-tenant for egress.
+**Host-side NAT** (always on). The Reconciler installs DNAT + SNAT
+rules in `ip weft-fip-nat` on the host that runs the target VM.
+This makes the FIP reachable on the LAN — enough for testing,
+intra-cluster traffic, or environments where the upstream router
+has a static route pointing the FIP's prefix at the host's public
+interface.
+
+**BGP-announced /32 prefixes** (active when weft-network has a
+NATS-backed event bus). For tenants with a `weft-router` microVM
+configured for the project's edge network (kind=egress +
+backend=gobgp), every mapped FIP is announced as a /32 (or /128
+for v6) prefix to the upstream peer via GoBGP, alongside the
+operator-typed Prefixes. The path is :
+
+```
+weft → "floating_ip.mapped" event
+     → weft-network's fips.Subscriber updates its per-network index
+     → publisher.StateFor appends <addr>/32 to DesiredState.Prefixes
+     → re-Publish on weft.router.<uuid>.config
+     → weft-router's GoBGP AddPath → upstream ISP
+```
+
+Verify the announce arrived upstream :
+
+```sh
+# on weft-router (over the tenant overlay or via "weft microvm exec"):
+gobgp neighbor <peer-ip> adj-out | grep <fip>/32
+# or look at the BGP RIB on the upstream side
+```
+
+If the FIP is in the table on the host but missing from `gobgp
+neighbor <peer-ip> adj-out`, check (a) `weft-network` has
+`--nats <url>` set, (b) the Router's `networks` includes the FIP's
+edge network, (c) the BGP session to the upstream is in the
+`Established` state.
+
+Single-host dev (`--nats` empty) skips the BGP layer entirely — FIPs
+stay host-NAT only, which is the right default for local work.
 
 ### "The VM migrated to another host and the FIP didn't follow"
 

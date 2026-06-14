@@ -108,6 +108,7 @@ nav:
       - Bring up a cluster: operations/bring-up.md
       - Infra services: operations/infra.md
       - Floating IPs: operations/floating-ips.md
+      - High availability (network): operations/ha-network.md
   - Operator handbook:
       - operator-handbook/index.md
       - Reverse proxy: operator-handbook/proxy.md

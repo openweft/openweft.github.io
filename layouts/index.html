@@ -42,6 +42,17 @@
     </div>
   </section>
 
+  <section class="topology">
+    <div class="wrap">
+      <span class="eyebrow">Distributed by design</span>
+      <h2>Three datacenters, one platform</h2>
+      <p>Each datacenter sits on its own ground plane — racks of physical hosts, each running a stack of microVMs. The dashed cyan threads are the <strong>WireGuard overlay</strong>: every microVM peers with every other across the WAN, so tenant workloads, infrastructure microVMs (<code>etcd</code>, <code>nats</code>, <code>dex</code>, <code>weft</code>, <code>weft-network</code>), and storage microVMs share one flat address space regardless of which availability zone they land in.</p>
+      <figure class="mesh">
+        <img src="{{ "img/mesh-3d.svg" | relURL }}" alt="Isometric view of three datacenters connected by a WireGuard mesh" loading="lazy"/>
+      </figure>
+    </div>
+  </section>
+
   <section class="features">
     <div class="wrap grid">
       {{ range .Site.Params.features }}

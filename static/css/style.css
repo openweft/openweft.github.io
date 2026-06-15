@@ -29,6 +29,7 @@ a:hover { text-decoration: underline; }
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
+  z-index: 20;
   background: rgba(13, 13, 28, 0.85);
   backdrop-filter: blur(8px);
 }
@@ -45,30 +46,38 @@ a:hover { text-decoration: underline; }
   position: relative;
   overflow: hidden;
   text-align: center;
-  padding: 110px 0 90px;
+  /* Pull up behind the 60px sticky topbar (+1px border) so the video is flush
+     to the very top; padding-top clears the bar for the copy. */
+  margin-top: -61px;
+  padding: 150px 0 96px;
   background: #0b1532 url("/img/hero-datacenter.jpg") center / cover no-repeat;
 }
-/* Looping datacenter video behind the hero; poster JPEG paints first. */
+/* Looping datacenter video, full-bleed and gaussian-blurred into a frosted
+   backdrop; scaled up so the blur's soft edges never show. Poster paints first. */
 .hero-video {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; z-index: 0; pointer-events: none;
+  filter: blur(9px) saturate(1.15) brightness(0.85);
+  transform: scale(1.12);
 }
 /* Dark veil over the video so the hero copy stays legible. */
 .hero::before {
   content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(13, 13, 28, 0.80) 0%, rgba(13, 13, 28, 0.92) 100%),
-    radial-gradient(120% 90% at 50% 0%, rgba(42, 42, 82, 0.55) 0%, transparent 60%);
+    linear-gradient(180deg, rgba(13, 13, 28, 0.62) 0%, rgba(13, 13, 28, 0.84) 100%),
+    radial-gradient(120% 90% at 50% 0%, rgba(42, 42, 82, 0.45) 0%, transparent 60%);
 }
 .hero .wrap { position: relative; z-index: 2; }
 @media (prefers-reduced-motion: reduce) { .hero-video { display: none; } }
-/* Weft's devise — the weaving epigraph. */
+/* Weft's devise — the weaving epigraph, laid over the video. */
 .devise {
   font-style: italic;
-  color: var(--accent2);
-  font-size: clamp(15px, 2.2vw, 19px);
-  max-width: 620px;
-  margin: -8px auto 24px;
+  color: #eef2ff;
+  font-size: clamp(17px, 2.6vw, 24px);
+  letter-spacing: 0.2px;
+  max-width: 640px;
+  margin: -6px auto 26px;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.55);
 }
 .hero h1 {
   font-size: clamp(32px, 5vw, 54px);
@@ -117,6 +126,21 @@ section h2 { font-size: 28px; margin: 0 0 28px; text-align: center; }
 .how ol { max-width: 720px; margin: 0 auto; padding-left: 22px; }
 .how li { margin-bottom: 12px; color: var(--muted); }
 .how li strong { color: var(--fg); }
+
+/* Topology — the animated isometric WireGuard-mesh view */
+.topology { text-align: center; }
+.topology .eyebrow {
+  display: inline-block; color: var(--accent2);
+  font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+.topology p { color: var(--muted); max-width: 760px; margin: 0 auto 30px; }
+.topology p code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; color: var(--accent2); }
+.topology .mesh { margin: 0; }
+.topology .mesh img {
+  display: block; width: 100%; max-width: 940px; height: auto; margin: 0 auto;
+  border: 1px solid var(--border); border-radius: 16px; background: var(--bg2);
+}
 
 footer {
   border-top: 1px solid var(--border);

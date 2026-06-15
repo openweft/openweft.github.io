@@ -27,8 +27,13 @@
   </header>
 
   <section class="hero">
+    <video class="hero-video" autoplay muted loop playsinline preload="metadata"
+           poster="{{ "img/hero-datacenter.jpg" | relURL }}" aria-hidden="true">
+      <source src="{{ "img/hero-datacenter.mp4" | relURL }}" type="video/mp4">
+    </video>
     <div class="wrap">
       <h1>{{ .Site.Params.tagline }}</h1>
+      {{ with .Site.Params.devise }}<p class="devise">{{ . }}</p>{{ end }}
       <p class="lead">{{ .Site.Params.subtitle }}</p>
       <div class="cta">
         <a class="btn primary" href="{{ .Site.Params.docsURL }}">Get started</a>

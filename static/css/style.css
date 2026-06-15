@@ -42,9 +42,33 @@ a:hover { text-decoration: underline; }
 
 /* Hero */
 .hero {
+  position: relative;
+  overflow: hidden;
   text-align: center;
   padding: 110px 0 90px;
-  background: radial-gradient(120% 90% at 50% 0%, #2a2a52 0%, var(--bg2) 55%, var(--bg) 100%);
+  background: #0b1532 url("/img/hero-datacenter.jpg") center / cover no-repeat;
+}
+/* Looping datacenter video behind the hero; poster JPEG paints first. */
+.hero-video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0; pointer-events: none;
+}
+/* Dark veil over the video so the hero copy stays legible. */
+.hero::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(13, 13, 28, 0.80) 0%, rgba(13, 13, 28, 0.92) 100%),
+    radial-gradient(120% 90% at 50% 0%, rgba(42, 42, 82, 0.55) 0%, transparent 60%);
+}
+.hero .wrap { position: relative; z-index: 2; }
+@media (prefers-reduced-motion: reduce) { .hero-video { display: none; } }
+/* Weft's devise — the weaving epigraph. */
+.devise {
+  font-style: italic;
+  color: var(--accent2);
+  font-size: clamp(15px, 2.2vw, 19px);
+  max-width: 620px;
+  margin: -8px auto 24px;
 }
 .hero h1 {
   font-size: clamp(32px, 5vw, 54px);

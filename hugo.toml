@@ -9,6 +9,7 @@ disableKinds = ["taxonomy", "term", "rss", "sitemap"]
 [params]
   description = "Self-hosted, pure-Go microVM cloud platform with TPM-attested node admission and WireGuard segmentation."
   tagline = "A microVM cloud platform, in one pure-Go binary."
+  devise = "Without the weft, the warp is just parallel threads."
   subtitle = "Weft is a HashiCorp-style cloud platform: one CGO-free Go binary that is control plane, node agent, and CLI. It boots real microVMs over a cgo-free QEMU driver, admits nodes by TPM 2.0 attestation, and segments every workload with WireGuard. Self-hosted, open source."
   docsURL = "https://openweft.github.io/docs/"
   githubURL = "https://github.com/openweft"

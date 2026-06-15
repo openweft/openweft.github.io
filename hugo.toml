@@ -1,178 +1,74 @@
-baseURL = 'https://openweft.github.io/'
-locale  = 'en-us'
-title   = 'Weft'
-# No theme — layouts live in ./layouts
+baseURL = "https://openweft.github.io/"
+defaultContentLanguage = "en"
+title = "Weft"
+enableRobotsTXT = true
 
-# Disable the Hugo defaults we don't want for a landing site.
-disableKinds = ['taxonomy', 'term', 'rss', 'sitemap']
+# Single-page landing site: no tag/category taxonomy pages, no feeds.
+disableKinds = ["taxonomy", "term", "rss", "sitemap"]
 
 [params]
-  # Consommée par : H1 sr-only ("Weft — {description}"), meta description
-  # SEO, et le paragraphe descriptif du footer — sans le "Weft is an"
-  # initial qui faisait doublon avec .Site.Title dans le H1.
-  description = "Open, Go-native, secure, microVM-first, multi-hypervisor, multi-tenant, multi-AZ cloud platform. One binary, server or client, like the HashiCorp tools."
-  brand       = "Weft"
-  github      = "openweft"
-  # heroEyebrow retiré — la même info ("Open, Go-native, multi-tenant…")
-  # est portée par .description (H1 sr-only + meta + footer), donc afficher
-  # une eyebrow par-dessus faisait redite visuelle. Laisser vide → la
-  # branche {{ with }} du template ne rend rien.
-  heroEyebrow = ""
-  # heroAccent / statusBadge ne sont plus rendus dans le hero — la marque
-  # vit dans la nav + favicon, et la tagline porte visuellement le hero.
-  # Le H1 sémantique (sr-only) reprend .Site.Title + .Site.Params.description.
-  heroTagline = "Without the weft, the warp is just parallel threads."
+  description = "Self-hosted, pure-Go microVM cloud platform with TPM-attested node admission and WireGuard segmentation."
+  tagline = "A microVM cloud platform, in one pure-Go binary."
+  subtitle = "Weft is a HashiCorp-style cloud platform: one CGO-free Go binary that is control plane, node agent, and CLI. It boots real microVMs over a cgo-free QEMU driver, admits nodes by TPM 2.0 attestation, and segments every workload with WireGuard. Self-hosted, open source."
+  docsURL = "https://openweft.github.io/docs/"
+  githubURL = "https://github.com/openweft"
 
-  # Hero intro paragraphs. Two-line array → two <p> blocks in
-  # the layout. Markdown not needed — these are inline HTML
-  # strings the template emits verbatim (via the `safeHTML`
-  # template func).
-  heroIntro = [
-    # Pitch : doit tenir sur UNE ligne dans le container 1080 px — la
-    # CSS .hero .intro p:first-child fige sa font-size pour que ça passe.
-    "Weft is an <strong>open, Go-native cloud platform</strong> — microVM-first, multi-hypervisor, multi-tenant, multi-AZ.",
-    # Étymologie + métaphore : paragraphe distinct, style courant.
-    "The name comes from weaving : the <em>weft</em> is the thread that crosses perpendicularly through the warp to form fabric, exactly what middleware does between heterogeneous hosts, networks, and storage backends.",
-    "One binary, server or client mode, like the HashiCorp tools. Runs on a laptop. Scales to a 3-DC cluster."
-  ]
+  [[params.features]]
+    icon = "🐹"
+    title = "Pure Go, zero cgo"
+    body = "Built with CGO_ENABLED=0 — one static binary that is control plane, node agent, and CLI. Trivial cross-compilation, no C toolchain, no shared-library drift."
 
-  # Caption rendered under the mesh SVG. Raw HTML — `safeHTML` in
-  # the partial — so we can <strong> the key terms.
-  meshCaption = "Three <strong>DCs</strong> (dashed) group <strong>racks</strong> of physical hosts ; each host runs <strong>microVMs</strong>. Indigo dots are <strong>infrastructure microVMs</strong> — <em>etcd</em>, <em>nats</em>, <em>dex</em>, <em>zot</em>, <em>coredns</em>, <em>cubefs</em>, plus the <em>weft</em> daemon itself — one replica per DC, all running side-by-side with tenant workloads (sky-blue dots) on the very hosts they orchestrate. There is no separate control-plane box : the <strong>weft</strong> chain across the top (highlighted) is the cloud platform's HA quorum, just another microVM service. Dashed sky threads are the <strong>WireGuard mesh</strong> connecting microVMs across DCs. Colour, not position, marks the <em>control plane</em> / <em>data plane</em> split."
+  [[params.features]]
+    icon = "📦"
+    title = "microVMs, real isolation"
+    body = "A cgo-free QEMU/TCG driver plus a darwin Virtualization.framework driver boot true VMs in milliseconds — hardware-grade isolation, container-grade ergonomics."
 
-# Hero call-to-action buttons. First is rendered as the primary
-# (filled) style, second is the ghost (outlined) style.
-[[params.heroCTAs]]
-  label = "View on GitHub"
-  url   = "https://github.com/openweft"
-  style = "primary"
-[[params.heroCTAs]]
-  label = "Quick start"
-  url   = "#what"
-  style = "ghost"
+  [[params.features]]
+    icon = "🔏"
+    title = "Attested admission"
+    body = "Nodes join only after a TPM 2.0 EK→AK→Quote handshake the control plane verifies. Each admitted node gets freshly minted WireGuard peer keys."
 
-# Footer columns — categorised links rendered by
-# layouts/partials/footer.html. Each column has a title + list
-# of {name, url} link entries. Add or rebalance freely.
-[[params.footerColumns]]
-  title = "Project"
-  [[params.footerColumns.links]]
-    name = "Topology"
-    url  = "#topology"
-  [[params.footerColumns.links]]
-    name = "What it does"
-    url  = "#what"
-  [[params.footerColumns.links]]
-    name = "API access"
-    url  = "#api"
-  [[params.footerColumns.links]]
-    name = "Flavors, volumes & shares"
-    url  = "#flavors"
-  [[params.footerColumns.links]]
-    name = "Design"
-    url  = "#design"
-  [[params.footerColumns.links]]
-    name = "Components"
-    url  = "#components"
-  [[params.footerColumns.links]]
-    name = "Status"
-    url  = "#status"
+  [[params.features]]
+    icon = "🧩"
+    title = "Self-hosted & open"
+    body = "etcd-backed KV state, gRPC API, HCL config. BSD-3-Clause, no SaaS, no lock-in, no telemetry. Runs on a laptop ; scales to a 3-DC cluster."
 
-[[params.footerColumns]]
-  title = "Repositories"
-  [[params.footerColumns.links]]
+  [[params.components]]
     name = "weft"
-    url  = "https://github.com/openweft/weft"
-  [[params.footerColumns.links]]
-    name = "weft-webui"
-    url  = "https://github.com/openweft/weft-webui"
-  [[params.footerColumns.links]]
-    name = "weft-microvm-init"
-    url  = "https://github.com/openweft/weft-microvm-init"
-  [[params.footerColumns.links]]
-    name = "weft-microvm-agent"
-    url  = "https://github.com/openweft/weft-microvm-agent"
-  [[params.footerColumns.links]]
-    name = "weft-driver-plugin"
-    url  = "https://github.com/openweft/weft-driver-plugin"
-  [[params.footerColumns.links]]
-    name = "weft-driver-vz"
-    url  = "https://github.com/openweft/weft-driver-vz"
-  [[params.footerColumns.links]]
+    body = "The binary: control plane, node agent, and CLI in one. HashiCorp-style `weft agent` daemon + `weft <noun> <verb>` client RPCs."
+    url = "https://github.com/openweft/weft"
+
+  [[params.components]]
+    name = "weft-proto"
+    body = "The gRPC service definitions and generated Go stubs shared by the agent, CLI, web UI, and Terraform provider."
+    url = "https://github.com/openweft/weft-proto"
+
+  [[params.components]]
+    name = "weft-microvm"
+    body = "microVM runtime behind `weft microvm`: OCI rootfs over virtio-fs, booted on a shared init kernel — no per-VM boot ISO."
+    url = "https://github.com/openweft/weft-microvm"
+
+  [[params.components]]
     name = "weft-driver-qemu"
-    url  = "https://github.com/openweft/weft-driver-qemu"
+    body = "The CGO-free QEMU/TCG hypervisor driver (go-plugin). Boots real VMs with no C bindings on any host."
+    url = "https://github.com/openweft/weft-driver-qemu"
 
-[[params.footerColumns]]
-  title = "Client apps"
-  [[params.footerColumns.links]]
-    name = "weft-app-osx"
-    url  = "https://github.com/openweft/weft-app-osx"
-  [[params.footerColumns.links]]
-    name = "weft-app-gtk"
-    url  = "https://github.com/openweft/weft-app-gtk"
-  [[params.footerColumns.links]]
-    name = "weft-app-windows"
-    url  = "https://github.com/openweft/weft-app-windows"
-  [[params.footerColumns.links]]
-    name = "weft-app-android"
-    url  = "https://github.com/openweft/weft-app-android"
-  [[params.footerColumns.links]]
-    name = "weft-app-ios"
-    url  = "https://github.com/openweft/weft-app-ios"
+  [[params.components]]
+    name = "weft-network"
+    body = "WireGuard segmentation: per-node peer minting, scoped routes, and the encrypted mesh that connects microVMs across DCs."
+    url = "https://github.com/openweft/weft-network"
 
-[[params.footerColumns]]
-  title = "Community"
-  [[params.footerColumns.links]]
-    name = "GitHub org"
-    url  = "https://github.com/openweft"
-  [[params.footerColumns.links]]
-    name = "Issues"
-    url  = "https://github.com/openweft/weft/issues"
-  [[params.footerColumns.links]]
-    name = "Discussions"
-    url  = "https://github.com/openweft/weft/discussions"
+  [[params.components]]
+    name = "weft-etcd"
+    body = "The etcd-backed KV datastore for cluster state — control-plane source of truth for the production 3-DC topology."
+    url = "https://github.com/openweft/weft-etcd"
 
-# Navigation menu — Hugo renders this in the topnav via
-# {{ range .Site.Menus.main }}. The "after" weight on GitHub
-# pins it to the end of the list.
-[menu]
-  [[menu.main]]
-    identifier = "topology"
-    name       = "Topology"
-    url        = "#topology"
-    weight     = 5
-  [[menu.main]]
-    identifier = "what"
-    name       = "What"
-    url        = "#what"
-    weight     = 10
-  [[menu.main]]
-    identifier = "api"
-    name       = "API"
-    url        = "#api"
-    weight     = 15
-  [[menu.main]]
-    identifier = "flavors"
-    name       = "Flavors"
-    url        = "#flavors"
-    weight     = 18
-  [[menu.main]]
-    identifier = "design"
-    name       = "Design"
-    url        = "#design"
-    weight     = 20
-  [[menu.main]]
-    identifier = "apps"
-    name       = "Apps"
-    url        = "#apps"
-    weight     = 25
-  [[menu.main]]
-    identifier = "components"
-    name       = "Components"
-    url        = "#components"
-    weight     = 30
-  [[menu.main]]
-    identifier = "docs"
-    name       = "Docs"
-    url        = "/docs/"
-    weight     = 40
+  [[params.components]]
+    name = "weft-hcl"
+    body = "HCL configuration: declare clusters, hosts, images, and VMs ; `weft up` converges them in dependency order."
+    url = "https://github.com/openweft/weft-hcl"
+
+  [[params.components]]
+    name = "weft-webui"
+    body = "The web dashboard for the cluster — instances, images, and hosts — driven by the same gRPC API as the CLI."
+    url = "https://github.com/openweft/weft-webui"

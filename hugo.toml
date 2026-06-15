@@ -39,6 +39,11 @@ disableKinds = ["taxonomy", "term", "rss", "sitemap"]
     title = "Multi-tenant, meshed"
     body = "Every resource is UUID-keyed and owned by a project and user. Each workload joins one flat WireGuard overlay mesh — peering across datacenters in a single address space, segmented by policy."
 
+  [[params.features]]
+    icon = "👥"
+    title = "Delegated administration"
+    body = "Hand each tenant to its own admins: scoped RBAC lets them manage their projects, members, images, and VMs — with no reach into other tenants or the cluster itself."
+
   [[params.components]]
     name = "weft"
     body = "The binary: control plane, node agent, and CLI in one. HashiCorp-style `weft agent` daemon + `weft <noun> <verb>` client RPCs."

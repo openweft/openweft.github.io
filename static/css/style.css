@@ -34,7 +34,9 @@ a:hover { text-decoration: underline; }
 }
 .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
 .brand { font-weight: 700; color: var(--fg); font-size: 18px; display: inline-flex; align-items: center; gap: 9px; }
-.brand img { height: 26px; width: auto; display: block; }
+/* The weft mark uses navy strokes designed for light backgrounds; on the dark
+   nav it needs a white chip to read. */
+.brand img { height: 32px; width: 32px; display: block; background: #fff; border-radius: 7px; padding: 3px; box-sizing: border-box; }
 .nav nav a { margin-left: 22px; color: var(--muted); }
 .nav nav a:hover { color: var(--fg); text-decoration: none; }
 

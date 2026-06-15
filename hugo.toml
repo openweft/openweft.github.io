@@ -34,6 +34,11 @@ disableKinds = ["taxonomy", "term", "rss", "sitemap"]
     title = "Self-hosted & open"
     body = "etcd-backed KV state, gRPC API, HCL config. BSD-3-Clause, no SaaS, no lock-in, no telemetry. Runs on a laptop ; scales to a 3-DC cluster."
 
+  [[params.features]]
+    icon = "🕸️"
+    title = "Multi-tenant, meshed"
+    body = "Every resource is UUID-keyed and owned by a project and user. Each workload joins one flat WireGuard overlay mesh — peering across datacenters in a single address space, segmented by policy."
+
   [[params.components]]
     name = "weft"
     body = "The binary: control plane, node agent, and CLI in one. HashiCorp-style `weft agent` daemon + `weft <noun> <verb>` client RPCs."
@@ -68,6 +73,11 @@ disableKinds = ["taxonomy", "term", "rss", "sitemap"]
     name = "weft-hcl"
     body = "HCL configuration: declare clusters, hosts, images, and VMs ; `weft up` converges them in dependency order."
     url = "https://github.com/openweft/weft-hcl"
+
+  [[params.components]]
+    name = "terraform-provider-weft"
+    body = "The Terraform provider: manage weft clusters, hosts, images, and microVMs as infrastructure-as-code over the same gRPC API."
+    url = "https://github.com/openweft/terraform-provider-weft"
 
   [[params.components]]
     name = "weft-webui"

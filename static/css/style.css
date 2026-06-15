@@ -40,8 +40,8 @@ a:hover { text-decoration: underline; }
 .brand img { height: 32px; width: 32px; display: block; background: #fff; border-radius: 7px; padding: 3px; box-sizing: border-box; }
 .nav nav a { margin-left: 22px; color: var(--muted); }
 .nav nav a:hover { color: var(--fg); text-decoration: none; }
-.nav nav a.gh { display: inline-flex; align-items: center; gap: 6px; }
-.nav nav a.gh svg { display: block; }
+.nav nav a.ico { display: inline-flex; align-items: center; gap: 6px; }
+.nav nav a.ico svg { display: block; }
 
 /* Hero */
 .hero {

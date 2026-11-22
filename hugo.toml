@@ -88,3 +88,13 @@ disableKinds = ["taxonomy", "term", "rss", "sitemap"]
     name = "weft-webui"
     body = "The web dashboard for the cluster — instances, images, and hosts — driven by the same gRPC API as the CLI."
     url = "https://github.com/openweft/weft-webui"
+
+  [[params.components]]
+    name = "weft-ha-forgejo"
+    body = "Highly available Forgejo on weft. Admin, database and LFS secrets are taken by reference (--admin-password-from systemd-creds:NAME), never as a flag value visible in ps."
+    url = "https://github.com/openweft/weft-ha-forgejo"
+
+  [[params.components]]
+    name = "weft-ha-irods"
+    body = "Highly available iRODS on weft. Admin, catalogue-database and zone-key secrets are taken by reference (--zone-key-from keychain:SERVICE/ACCOUNT), never as a flag value visible in ps."
+    url = "https://github.com/openweft/weft-ha-irods"

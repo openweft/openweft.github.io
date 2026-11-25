@@ -27,7 +27,7 @@ disableKinds = ["taxonomy", "term", "rss", "sitemap"]
   [[params.features]]
     icon = "🔏"
     title = "Attested admission"
-    body = "Nodes join only after a TPM 2.0 EK→AK→Quote handshake the control plane verifies. Each admitted node gets freshly minted WireGuard peer keys."
+    body = "Nodes join only after a TPM 2.0 EK→AK→Quote handshake the control plane verifies. Each admitted node gets freshly minted WireGuard peer keys. A microVM fetches its own secrets (a CubeFS key pair, a WireGuard private key) over a guest-only vsock channel, by ID, never from the pod spec."
 
   [[params.features]]
     icon = "🧩"

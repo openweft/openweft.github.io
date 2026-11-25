@@ -43,6 +43,26 @@ The 4-arch infra images (`weft-etcd`, `weft-dex`, `weft-nats`, `weft-zot`,
 Dockerfiles, distroless base, tag-gated workflows that target
 **amd64 + arm64 + riscv64 + loong64** via `buildx` + qemu binfmt.
 
+### weft-nats
+
+`ghcr.io/openweft/weft-nats:v2.12.15` is a **closed broker**: no
+anonymous user. weft-loom-server's nkey is the only direct user; every
+other connection goes to loom-server's auth callout, which gives a
+workspace VM its own credential, valid for its own subjects only
+(`weft.mounts.<vmID>`, `weft.containers.<vmID>`, ...). The broker holds
+two public keys, from a mounted `keys.conf`, and refuses to start
+without it; the seeds stay in loom-server and reach it by reference (a
+file or a systemd credential), never in an environment variable. The
+JetStream store is `/data`, mode 0700, uid 65532.
+
+Setup and compose / systemd examples: the
+[weft-nats README](https://github.com/openweft/weft-nats#readme).
+
+**Breaking change from earlier images:** deploy `keys.conf`,
+weft-loom-server **v0.6.1 or later** and weft-microvm-agent **v0.4.3 or
+later** together. A credential is revoked for new connections when its
+VM exits; an open connection stays until it closes.
+
 ### weft-network
 
 The networking control plane, sibling repo
